@@ -1,0 +1,31 @@
+# Development files
+src/
+example/
+tests/
+__tests__/
+*.test.*
+*.spec.*
+
+# Configuration files
+.eslintrc
+.prettierrc
+rollup.config.js
+tsconfig.json
+jest.config.js
+
+# Build tools
+node_modules/
+.github/
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+
+# Misc
+*.log
+.DS_Store
+coverage/
+.env
+*.tgz
