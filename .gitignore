@@ -3,6 +3,7 @@ dist/
 
 # Ignore all files in the node_modules directory
 node_modules/
+example/node_modules/
 
 .env
 *.tgz
