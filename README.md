@@ -1,20 +1,36 @@
-# demoPenguin
+#
 
-# Build the package
-npm run build
+## Features
 
-# publish the changes using yalc
-yalc publish
+- 🚀 Easy integration with React applications
+- 🎯 Target demonstrations based on user attributes
+- 🔄 Real-time updates and synchronization
+- 📱 Responsive design for all devices
+- ⚡ Lightweight and performant
+- 🛠️ Highly customizable
 
-sudo rm -rf .yalc
-sudo rm -rf dist 
-sudo rm -rf node_modules
-sudo rm -rf package-lock.json
-sudo npm install
+## Documentation
 
-sudo yalc publish --force
+For detailed documentation, visit [demopenguin.com](https://demopenguin.com)
 
+## Contributing
 
-## After making changes to the code
-sudo npm run build
-sudo yalc push --changed
+1. Fork it ([https://github.com/thedogwiththedataonit/demoPenguin/fork](https://github.com/thedogwiththedataonit/demoPenguin/fork))
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -am 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Create a new Pull Request
+
+## License
+
+Distributed under the MIT license. See `LICENSE` for more information.
+
+## Links
+
+- Website: [demopenguin.com](https://demopenguin.com)
+- Repository: [github.com/thedogwiththedataonit/demoPenguin](https://github.com/thedogwiththedataonit/demoPenguin)
+- Issue tracker: [github.com/thedogwiththedataonit/demoPenguin/issues](https://github.com/thedogwiththedataonit/demoPenguin/issues)
+
+[npm-image]: https://demopenguin.com/penguin-walking.gif
+[npm-url]: https://npmjs.org/package/demo-penguin
+[npm-downloads]: https://img.shields.io/npm/dm/demo-penguin.svg?style=flat-square
