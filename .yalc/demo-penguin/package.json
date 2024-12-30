@@ -1,6 +1,6 @@
 {
     "name": "demo-penguin",
-    "version": "1.0.2",
+    "version": "1.0.4",
     "description": "A npm package to use demo-penguin in your project. Add the DemoPenguin component to your project to begin using demo-penguin. More information can be found at https://demopenguin.com",
     "author": "Thomas Park",
     "license": "MIT",
@@ -43,5 +43,5 @@
         "lucide-react": "^0.469.0",
         "tailwind-merge": "^2.6.0"
     },
-    "yalcSig": "ddf3488105015efb88814644f1f363ed"
+    "yalcSig": "f95acabb891ed7e74b6da0ac3ba93012"
 }

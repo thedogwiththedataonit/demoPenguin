@@ -44,7 +44,7 @@ function DemoPenguin({ clientToken, userId, userInfo, className = '' }: DemoPeng
 
     useEffect(() => {
         console.log("DemoPenguin initialized with:", { clientToken, userId, userInfo });
-        fetch('http://demopenguin.com/api/v1/get/application', {
+        fetch('https://demopenguin.com/api/v1/get/application', {
             headers: {
                 'demopenguin-client-token': clientToken
             }

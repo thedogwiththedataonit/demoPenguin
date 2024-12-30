@@ -6,6 +6,7 @@ node_modules/
 example/node_modules/
 
 .yalc/
+internal_notes.md
 
 .env
 *.tgz

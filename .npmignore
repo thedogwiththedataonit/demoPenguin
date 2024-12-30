@@ -28,4 +28,5 @@ node_modules/
 .DS_Store
 coverage/
 .env
+internal_notes.md
 *.tgz
