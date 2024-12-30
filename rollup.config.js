@@ -1,10 +1,8 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
-import babel from '@rollup/plugin-babel';
+import { babel } from '@rollup/plugin-babel';
 import postcss from 'rollup-plugin-postcss';
-import autoprefixer from 'autoprefixer';
-import tailwindcss from 'tailwindcss';
 
 export default {
   input: 'src/index.ts',
@@ -12,30 +10,38 @@ export default {
     {
       file: 'dist/index.js',
       format: 'cjs',
+      sourcemap: true
     },
     {
       file: 'dist/index.esm.js',
       format: 'esm',
-    },
+      sourcemap: true
+    }
   ],
-  external: ['react', 'react-dom'],
+  external: [
+    'react',
+    'react-dom',
+    'react/jsx-runtime',
+    '@radix-ui/react-dialog',
+    'lucide-react'
+  ],
   plugins: [
     resolve(),
     commonjs(),
     typescript(),
     babel({
-      babelHelpers: 'bundled',
       exclude: 'node_modules/**',
+      babelHelpers: 'bundled'
     }),
     postcss({
-      plugins: [
-        tailwindcss,
-        autoprefixer,
-      ],
-      inject: true,
-      modules: false,
-      autoModules: false,
+      config: {
+        path: './postcss.config.js'
+      },
+      extensions: ['.css'],
       minimize: true,
-    }),
-  ],
+      inject: {
+        insertAt: 'top'
+      }
+    })
+  ]
 };

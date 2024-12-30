@@ -35,28 +35,6 @@
         "@radix-ui/react-dialog": "^1.0.0",
         "lucide-react": "^1.0.0"
     },
-    "devDependencies": {
-        "@babel/core": "^7.22.0",
-        "@babel/preset-react": "^7.22.0",
-        "@babel/preset-typescript": "^7.22.0",
-        "@rollup/plugin-babel": "^6.0.0",
-        "@rollup/plugin-commonjs": "^25.0.0",
-        "@rollup/plugin-node-resolve": "^15.0.0",
-        "@rollup/plugin-typescript": "^11.0.0",
-        "@testing-library/react": "^14.0.0",
-        "@types/jest": "^29.0.0",
-        "@types/react": "^18.0.0",
-        "autoprefixer": "^10.0.0",
-        "jest": "^29.0.0",
-        "postcss": "^8.4.49",
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
-        "rollup": "^3.0.0",
-        "rollup-plugin-postcss": "^4.0.2",
-        "tailwindcss": "^3.0.0",
-        "tslib": "^2.8.1",
-        "typescript": "^5.0.0"
-    },
     "dependencies": {
         "@radix-ui/react-dialog": "^1.1.4",
         "class-variance-authority": "^0.7.1",
@@ -64,5 +42,6 @@
         "demo-penguin": "file:.yalc/demo-penguin",
         "lucide-react": "^0.469.0",
         "tailwind-merge": "^2.6.0"
-    }
+    },
+    "yalcSig": "ddf3488105015efb88814644f1f363ed"
 }

@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "packages": {
+    "demo-penguin": {
+      "signature": "ddf3488105015efb88814644f1f363ed",
+      "file": true
+    }
+  }
+}
