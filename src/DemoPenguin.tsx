@@ -18,6 +18,7 @@ interface DemoPenguinProps {
     clientToken: string;
     userId: string;
     userInfo: any;
+    devMode?: boolean;
     className?: string;
 }
 
@@ -34,7 +35,9 @@ export interface Step {
     imageUrl?: string;
 }
 
-function DemoPenguin({ clientToken, userId, userInfo, className = '' }: DemoPenguinProps) {
+const DEMO_PENGUIN_API_URL = "https://www.demopenguin.com/api/v1/get/application";
+const DEMO_PENGUIN_API_URL_DEV = "http://localhost:3000/api/v1/get/application";
+function DemoPenguin({ clientToken, userId, userInfo, devMode = false, className = '' }: DemoPenguinProps) {
     // Initialize state
     console.log("DemoPenguin initialized with:", { clientToken, userId, userInfo });
     const [step, setStep] = useState(1);
@@ -44,9 +47,13 @@ function DemoPenguin({ clientToken, userId, userInfo, className = '' }: DemoPeng
 
     useEffect(() => {
         console.log("DemoPenguin initialized with:", { clientToken, userId, userInfo });
-        fetch('https://demopenguin.com/api/v1/get/application', {
+        //get the current window url pathname
+        const currentUrl = window.location.pathname;
+        console.log("Current URL:", currentUrl);
+        fetch(devMode ? DEMO_PENGUIN_API_URL_DEV : DEMO_PENGUIN_API_URL, {
             headers: {
-                'demopenguin-client-token': clientToken
+                'demopenguin-client-token': clientToken,
+                'demopenguin-pathname': currentUrl
             }
         })
             .then(response => response.json())
