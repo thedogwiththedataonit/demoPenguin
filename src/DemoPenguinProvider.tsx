@@ -17,9 +17,11 @@ import { cn } from "./utils";
 import { ArrowRight, Torus } from "lucide-react";
 
 export interface DemoPenguinStep {
+  id: string;
   title: string;
   description: string;
   selectorId?: string;
+  imageUrl?: string;
   width?: number;
   height?: number;
   onClickWithinArea?: () => void;
@@ -277,11 +279,18 @@ export function DemoPenguinProvider({
                   }}
                   className="bg-background relative z-[100] rounded-lg border p-4 shadow-lg"
                 >
-                  <div className="text-muted-foreground absolute right-4 top-4 text-xs">
-                    {currentStep + 1} / {steps.length}
-                  </div>
                   <AnimatePresence mode="wait">
                     <div>
+                      {
+                        steps[currentStep]?.imageUrl && (
+                          <img 
+                            style={{
+                              marginBottom: "16px",
+                            }}
+                            src={steps[currentStep]?.imageUrl} 
+                            className="rounded-lg w-full h-full object-cover" />
+                        )
+                      }
                       <motion.div
                         key={`tour-content-${currentStep}`}
                         initial={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
@@ -296,21 +305,24 @@ export function DemoPenguinProvider({
                         }}
                       >
                         <h2 className="text-lg font-medium">{steps[currentStep]?.title}</h2>
-                        <p className="text-muted-foreground">{steps[currentStep]?.description}</p>
+                        <p className="text-muted-foreground text-sm">{steps[currentStep]?.description}</p>
                       </motion.div>
-                      <div className="mt-4 flex justify-between">
+                      <div className="mt-4 flex w-full justify-between">
                         {currentStep > 0 && (
                           <button
                             onClick={previousStep}
                             disabled={currentStep === 0}
-                            className="text-sm text-muted-foreground hover:text-foreground"
+                            className="text-xs text-muted-foreground hover:text-foreground"
                           >
-                            Previous
+                            Back
                           </button>
                         )}
+                        <div className="text-muted-foreground text-xs">
+                          {currentStep + 1} / {steps.length}
+                        </div>
                         <button
                           onClick={nextStep}
-                          className="ml-auto text-sm font-medium text-primary hover:text-primary/90"
+                          className="text-xs font-medium text-primary hover:text-primary/90"
                         >
                           {currentStep === steps.length - 1 ? "Finish" : "Next"}
                         </button>
@@ -322,6 +334,11 @@ export function DemoPenguinProvider({
             ) : (
               <AlertDialog open={true}>
                 <AlertDialogContent className="max-w-md p-6">
+                  {
+                    steps[currentStep]?.imageUrl && (
+                      <img src={steps[currentStep]?.imageUrl} className="rounded-lg w-full h-full object-cover" />
+                    )
+                  }
                   <AlertDialogHeader className="flex flex-col items-center justify-center">
                     <AlertDialogTitle className="text-center text-xl font-medium">
                       {steps[currentStep]?.title}

@@ -1,2 +1,2 @@
-//export { DemoPenguin } from './DemoPenguin'
+"use client";
 export { DemoPenguinInit } from './DemoPenguinInit'

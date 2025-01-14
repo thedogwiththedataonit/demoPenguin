@@ -34,3 +34,8 @@ Distributed under the MIT license. See `LICENSE` for more information.
 [npm-image]: https://demopenguin.com/penguin-walking.gif
 [npm-url]: https://npmjs.org/package/demo-penguin
 [npm-downloads]: https://img.shields.io/npm/dm/demo-penguin.svg?style=flat-square
+
+
+---
+npm run build
+yalc publish --push

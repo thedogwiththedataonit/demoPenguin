@@ -63,8 +63,7 @@ function DemoPenguin({ clientToken, userId, userInfo, devMode = false, className
                 //setApplication(data);
                 //if data.status is inactive, setIsOpen to false
                 console.log("Data:", data);
-                const elementKey = data.elementKey
-                console.log("Element Key:", elementKey);
+                const selectorId = data.selectorId
                 if (data.status === "inactive") {
                     setIsOpen(false);
                 } else {

@@ -45,7 +45,8 @@ export default {
       sourcemap: true,
       exports: 'named',
       preserveModules: false, // Changed to true to maintain file structure
-      entryFileNames: 'index.mjs'
+      entryFileNames: 'index.mjs',
+      banner: "'use client';"
     },
     {
       dir: 'dist',
@@ -53,7 +54,8 @@ export default {
       sourcemap: true,
       exports: 'named',
       preserveModules: false, // Changed to true to maintain file structure
-      entryFileNames: 'index.cjs'
+      entryFileNames: 'index.cjs',
+      banner: "'use client';"
     }
   ],
   external: [

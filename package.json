@@ -72,6 +72,7 @@
         "typescript": "^5.0.0"
     },
     "dependencies": {
+        "@babel/plugin-transform-runtime": "^7.25.9",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "tailwind-merge": "^2.6.0"
