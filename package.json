@@ -29,7 +29,8 @@
     "scripts": {
         "dev": "rollup -c rollup.config.mjs -w",
         "build": "rollup -c rollup.config.mjs",
-        "prepublishOnly": "npm run build"
+        "prepublishOnly": "npm run build",
+        "watch": "nodemon --watch src --ext js,jsx,ts,tsx,json --exec 'yalc push'"
     },
     "publishConfig": {
         "access": "public"

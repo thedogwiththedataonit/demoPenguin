@@ -331,13 +331,19 @@ export function DemoPenguinProvider({
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                    <div className="flex justify-center space-x-1.5 max-sm:order-1">
+                    <div className="flex gap-1 justify-center items-center space-x-1 max-sm:order-1">
                       {[...Array(steps.length)].map((_, index) => (
                         <div
                           key={index}
+                          style={{
+                            borderRadius: "50%",
+                            width: "8px",
+                            height: "8px",
+                            opacity: index === currentStep ? 1 : 0.2,
+                          }}
                           className={cn(
-                            "h-2 w-3 rounded-full bg-primary",
-                            index === currentStep ? "bg-primary" : "opacity-20",
+                            "bg-primary",
+
                           )}
                         />
                       ))}
