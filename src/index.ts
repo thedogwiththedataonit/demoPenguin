@@ -1,1 +1,2 @@
-export { DemoPenguin } from './DemoPenguin'
+//export { DemoPenguin } from './DemoPenguin'
+export { DemoPenguinInit } from './DemoPenguinInit'

@@ -37,6 +37,7 @@ export interface Step {
 
 const DEMO_PENGUIN_API_URL = "https://www.demopenguin.com/api/v1/get/application";
 const DEMO_PENGUIN_API_URL_DEV = "http://localhost:3000/api/v1/get/application";
+
 function DemoPenguin({ clientToken, userId, userInfo, devMode = false, className = '' }: DemoPenguinProps) {
     // Initialize state
     console.log("DemoPenguin initialized with:", { clientToken, userId, userInfo });
@@ -61,6 +62,9 @@ function DemoPenguin({ clientToken, userId, userInfo, devMode = false, className
                 //data is type Application
                 //setApplication(data);
                 //if data.status is inactive, setIsOpen to false
+                console.log("Data:", data);
+                const elementKey = data.elementKey
+                console.log("Element Key:", elementKey);
                 if (data.status === "inactive") {
                     setIsOpen(false);
                 } else {
