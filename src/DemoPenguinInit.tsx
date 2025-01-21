@@ -58,9 +58,9 @@ const steps: DemoPenguinStep[] = [
 ];
 */
 
-export function DemoPenguinInit({ children, clientToken, userId, userInfo, devMode = false }: { children: React.ReactNode, clientToken: string, userId: string, userInfo: any, devMode: boolean }) {
+export function DemoPenguinInit({ children, clientToken, userId, userInfo, devMode = false }: { children: React.ReactNode, clientToken: string, userId: string, userInfo: any, devMode?: boolean  }) {
   return (
-    <DemoPenguinProvider clientToken={clientToken} userId={userId} userInfo={userInfo} devMode={devMode}>      
+    <DemoPenguinProvider clientToken={clientToken} userId={userId} userInfo={userInfo} devMode={devMode || false}>      
       {children}
     </DemoPenguinProvider>
   )

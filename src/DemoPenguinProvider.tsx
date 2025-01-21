@@ -3,6 +3,13 @@
 import { AnimatePresence, motion } from "motion/react";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
+/*
+---
+npm run build
+yalc publish --push
+---
+*/
+
 import {
   AlertDialog,
   AlertDialogContent,
@@ -28,9 +35,8 @@ export interface Step {
   width?: number
   height?: number
   onClickWithinArea?: () => void
-  position?: "top" | "bottom" | "left" | "right"
   size: "small" | "medium" | "large";
-
+  position?: "top" | "bottom" | "left" | "right"
 }
 
 export interface Theme {
@@ -351,8 +357,8 @@ export function DemoPenguinProvider({
     console.log("Step:", step);
     console.log("Theme:", theme);
     const sizesToClass = {
-      "small": 'w-[240px]',
-      "medium": 'w-[350px]',
+      "small": 'w-[300px]',
+      "medium": 'w-[400px]',
       "large": 'w-[500px]'
     }
     const cardClass = `${theme.backgroundColor} 

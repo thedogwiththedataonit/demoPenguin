@@ -13,6 +13,36 @@
 
 For detailed documentation, visit [demopenguin.com](https://demopenguin.com)
 
+## Example
+Add the DemoPenguinInit component to your root layout component.
+
+```tsx
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${inter.className}`}>
+        <DemoPenguinInit 
+          clientToken="client-token"
+          userId="user-id"
+          userInfo={{
+            name: "John Doe",
+            email: "john.doe@example.com",
+            company: "Example Inc.",
+            role: "Admin",
+          }}
+        >
+          {children}
+        </DemoPenguinInit>
+      </body>
+    </html>
+  );
+}
+```
+
 ## Contributing
 
 1. Fork it ([https://github.com/thedogwiththedataonit/demoPenguin/fork](https://github.com/thedogwiththedataonit/demoPenguin/fork))
@@ -35,7 +65,3 @@ Distributed under the MIT license. See `LICENSE` for more information.
 [npm-url]: https://npmjs.org/package/demo-penguin
 [npm-downloads]: https://img.shields.io/npm/dm/demo-penguin.svg?style=flat-square
 
-
----
-npm run build
-yalc publish --push
