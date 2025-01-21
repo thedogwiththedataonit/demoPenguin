@@ -1,10 +1,10 @@
 "use client"
-import { DemoPenguinAlertDialog, DemoPenguinStep, useDemoPenguin } from "./DemoPenguinProvider"
+import { Step, useDemoPenguin } from "./DemoPenguinProvider"
 import React, { useEffect, useState } from "react"
 
 
-const DEMO_PENGUIN_API_URL = "https://www.demopenguin.com/api/v1/get/application";
-const DEMO_PENGUIN_API_URL_DEV = "http://localhost:3000/api/v1/get/application";
+const DEMO_PENGUIN_API_URL = "https://www.demopenguin.com/api/v1/get/penguin";
+const DEMO_PENGUIN_API_URL_DEV = "http://localhost:3000/api/v1/get/penguin";
 
 export function Penguin({  clientToken, userId, userInfo, devMode }: {  clientToken: string, userId: string, userInfo: any, devMode: boolean }) {    
     
@@ -30,11 +30,17 @@ export function Penguin({  clientToken, userId, userInfo, devMode }: {  clientTo
               console.log("Data:", data);
               const selectorId = data.selectorId
               console.log("SelectorId:", selectorId);
-              if (data.status === "inactive") {
+              if (data.status === "not found") {
+                  console.log("DemoPenguin is not found");
+                  return;
+              } else if (data.status === "inactive") {
                   console.log("DemoPenguin is inactive");
+                  return;
               } else {
                   setSteps(data.steps);
                   console.log("DemoPenguin is active");
+                  setOpenDemoPenguin(true);
+                  return;
               }
           })
           .catch(error => console.error('Error:', error));
@@ -43,6 +49,10 @@ export function Penguin({  clientToken, userId, userInfo, devMode }: {  clientTo
 
 
     return (
-        <DemoPenguinAlertDialog isOpen={openDemoPenguin} setIsOpen={setOpenDemoPenguin} />
+      {
+        /*
+        <DemoPenguinAlertDialog />
+        */
+      }
     )
 }

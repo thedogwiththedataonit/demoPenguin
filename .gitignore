@@ -8,5 +8,7 @@ example/node_modules/
 .yalc/
 internal_notes.md
 
+scripts/
+
 .env
 *.tgz

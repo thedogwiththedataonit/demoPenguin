@@ -27,10 +27,13 @@
         "demo"
     ],
     "scripts": {
+        "generate-safelist": "node scripts/generate-safelist.js",
         "dev": "rollup -c rollup.config.mjs -w",
-        "build": "rollup -c rollup.config.mjs",
+        "build": "npm run generate-safelist && npm run build:css && rollup -c rollup.config.mjs",
+        "build:css": "tailwindcss -i ./src/styles/index.css -o ./dist/styles.css --minify",
         "prepublishOnly": "npm run build",
-        "watch": "nodemon --watch src --ext js,jsx,ts,tsx,json --exec 'yalc push'"
+        "watch": "nodemon --watch src --ext js,jsx,ts,tsx,json,css --exec 'npm run build && yalc push'",
+        "watch:css": "tailwindcss -i ./src/styles/index.css -o ./dist/styles.css --watch"
     },
     "publishConfig": {
         "access": "public"
@@ -42,8 +45,7 @@
         "lucide-react": "^0.471.0",
         "motion": "^11.17.0",
         "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-        "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-        "tailwindcss": "^3.0.0"
+        "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
     },
     "devDependencies": {
         "@babel/core": "^7.26.0",
@@ -75,6 +77,7 @@
         "@babel/plugin-transform-runtime": "^7.25.9",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
-        "tailwind-merge": "^2.6.0"
+        "tailwind-merge": "^2.6.0",
+        "tailwindcss": "^3.0.0"
     }
 }

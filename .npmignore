@@ -30,3 +30,5 @@ coverage/
 .env
 internal_notes.md
 *.tgz
+
+scripts/

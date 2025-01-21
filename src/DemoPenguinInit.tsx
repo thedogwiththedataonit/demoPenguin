@@ -1,7 +1,6 @@
 "use client"
 
-import { Penguin } from "./Penguin"
-import { DemoPenguinProvider, DemoPenguinStep } from "./DemoPenguinProvider"
+import { DemoPenguinProvider, Step } from "./DemoPenguinProvider"
 import React, { useState, useEffect } from "react" 
 
 
@@ -61,9 +60,7 @@ const steps: DemoPenguinStep[] = [
 
 export function DemoPenguinInit({ children, clientToken, userId, userInfo, devMode = false }: { children: React.ReactNode, clientToken: string, userId: string, userInfo: any, devMode: boolean }) {
   return (
-    <DemoPenguinProvider>
-      <Penguin clientToken={clientToken} userId={userId} userInfo={userInfo} devMode={devMode} />
-      
+    <DemoPenguinProvider clientToken={clientToken} userId={userId} userInfo={userInfo} devMode={devMode}>      
       {children}
     </DemoPenguinProvider>
   )
