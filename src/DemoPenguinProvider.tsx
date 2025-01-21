@@ -255,115 +255,6 @@ export function DemoPenguinProvider({
     };
   }, [updateElementPosition]);
 
-  const renderStepContent = (step: Step, theme: Theme, previousStep: () => void, nextStep: () => void) => {
-    console.log("Step:", step);
-    console.log("Theme:", theme);
-    const sizesToClass = {
-      "small": 'w-[240px]',
-      "medium": 'w-[350px]',
-      "large": 'w-[500px]'
-    }
-    const cardClass = `${theme.backgroundColor} 
-        ${theme.shadowColor}
-        ${theme.shadowOpacity}
-        ${theme.shadowRadius}
-        ${theme.shadowOffsetX}
-        ${theme.shadowOffsetY}
-        ${theme.cardRadius}
-        ${theme.cardBorderColor}
-        ${theme.cardBorderWidth}
-        ${theme.cardBorderStyle}
-        ${theme.cardPaddingX}
-        ${theme.cardPaddingY}
-        ${sizesToClass[step.size]}
-        p-4 shadow-lg`
-  
-    const titleTextClass = `${theme.titleTextColor}
-        ${theme.titleTextSize}
-        ${theme.titleTextWeight}
-        ${theme.titleTextAlign}
-        ${theme.titleTextPaddingX}
-        ${theme.titleTextPaddingY}`
-  
-    const descriptionTextClass = `${theme.descriptionTextColor}
-        ${theme.descriptionTextSize}
-        ${theme.descriptionTextWeight}
-        ${theme.descriptionTextAlign}
-        ${theme.descriptionTextPaddingX}
-        ${theme.descriptionTextPaddingY}`
-  
-    const buttonClass = `mt-4
-        ${theme.buttonSize}
-        ${theme.buttonTextColor}
-        ${theme.buttonTextSize}
-        ${theme.buttonBackgroundColor}
-        ${theme.buttonBorderColor}
-        ${theme.buttonBorderRadius}
-        ${theme.buttonBorderWidth}
-        ${theme.buttonBorderStyle}
-        ${theme.buttonTextWeight}
-        ${theme.buttonHoverTextColor}
-        ${theme.buttonHoverBackgroundColor}`
-  
-    const skipButtonClass = `${theme.skipButtonTextColor} ${theme.skipButtonBackgroundColor} ${theme.skipButtonHoverTextColor} ${theme.skipButtonHoverBackgroundColor}`
-  
-  
-    return (
-      <AlertDialogContent className={cardClass}>
-        {
-          step.skipButton && (
-            <X className="h-5 w-5 absolute top-2 right-2 text-muted-foreground hover:text-primary cursor-pointer" />
-          )
-        }
-        <div className={`flex gap-2 ${step.imageUrl && 'flex-col'}`}>
-          {
-            step.imageUrl ? (
-              <img
-                src={step.imageUrl}
-                alt={step.title}
-                width={1600}
-                height={1600}
-                className="w-full h-auto rounded-sm object-cover"
-              />
-            ) : null
-          }
-          <div className="flex-1">
-            <AlertDialogTitle className={`
-                    ${titleTextClass}
-                    tracking-tight line-clamp-2`}>{step.title}</AlertDialogTitle>
-            <AlertDialogDescription className={`
-                    ${descriptionTextClass}
-                    tracking-tight line-clamp-2`}>{step.description}</AlertDialogDescription>
-            <div className="flex justify-end gap-2">
-              {
-                step.backButton && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      previousStep()
-                    }}
-                    className={`${buttonClass} ${skipButtonClass}`}>Back</Button>
-                )
-              }
-              <Button
-                onClick={() => {
-                  nextStep()
-                }}
-                type="button"
-                className={`group ${buttonClass}`}>{step.nextButtonText}
-                <ArrowRight
-                  className="-me-1 ms-2 opacity-60 transition-transform group-hover:translate-x-0.5"
-                  size={16}
-                  strokeWidth={2}
-                  aria-hidden="true"
-                />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </AlertDialogContent>
-    )
-  }
 
   const nextStep = useCallback(async () => {
     setCurrentStep((prev) => {
@@ -456,6 +347,170 @@ export function DemoPenguinProvider({
       .catch(error => console.error('Error:', error));
   }, [clientToken, devMode]);
 
+  const renderStepContent = (highlightStep: boolean, step: Step, theme: Theme, previousStep: () => void, nextStep: () => void) => {
+    console.log("Step:", step);
+    console.log("Theme:", theme);
+    const sizesToClass = {
+      "small": 'w-[240px]',
+      "medium": 'w-[350px]',
+      "large": 'w-[500px]'
+    }
+    const cardClass = `${theme.backgroundColor} 
+        ${theme.shadowColor}
+        ${theme.shadowOpacity}
+        ${theme.shadowRadius}
+        ${theme.shadowOffsetX}
+        ${theme.shadowOffsetY}
+        ${theme.cardRadius}
+        ${theme.cardBorderColor}
+        ${theme.cardBorderWidth}
+        ${theme.cardBorderStyle}
+        ${theme.cardPaddingX}
+        ${theme.cardPaddingY}
+        ${sizesToClass[step.size]}
+        p-4 shadow-lg`
+
+    const titleTextClass = `${theme.titleTextColor}
+        ${theme.titleTextSize}
+        ${theme.titleTextWeight}
+        ${theme.titleTextAlign}
+        ${theme.titleTextPaddingX}
+        ${theme.titleTextPaddingY}`
+
+    const descriptionTextClass = `${theme.descriptionTextColor}
+        ${theme.descriptionTextSize}
+        ${theme.descriptionTextWeight}
+        ${theme.descriptionTextAlign}
+        ${theme.descriptionTextPaddingX}
+        ${theme.descriptionTextPaddingY}`
+
+    const buttonClass = `mt-4
+        ${theme.buttonSize}
+        ${theme.buttonTextColor}
+        ${theme.buttonTextSize}
+        ${theme.buttonBackgroundColor}
+        ${theme.buttonBorderColor}
+        ${theme.buttonBorderRadius}
+        ${theme.buttonBorderWidth}
+        ${theme.buttonBorderStyle}
+        ${theme.buttonTextWeight}
+        ${theme.buttonHoverTextColor}
+        ${theme.buttonHoverBackgroundColor}`
+
+    const skipButtonClass = `${theme.skipButtonTextColor} ${theme.skipButtonBackgroundColor} ${theme.skipButtonHoverTextColor} ${theme.skipButtonHoverBackgroundColor}`
+
+    if (highlightStep) {
+      return (
+        <div className={cardClass}>
+          {
+            step.imageUrl && (
+              <img
+                style={{
+                  marginBottom: "16px",
+                }}
+                src={step.imageUrl}
+                className="rounded-lg w-full h-full object-cover" />
+            )
+          }
+          <motion.div
+            key={`tour-content-${step.id}`}
+            initial={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
+            className="overflow-hidden"
+            transition={{
+              duration: 0.2,
+              height: {
+                duration: 0.4,
+              },
+            }}
+          >
+            <h2 className={titleTextClass}>{step.title}</h2>
+            <p className={descriptionTextClass}>{step.description}</p>
+          </motion.div>
+          <div className="mt-4 flex w-full justify-between">
+            {step.backButton && (
+              <Button
+                onClick={previousStep}
+                disabled={currentStep === 0}
+                className={buttonClass}
+              >
+                Back
+              </Button>
+            )}
+            <div className="text-muted-foreground text-xs">
+              {currentStep + 1} / {steps.length}
+            </div>
+            <Button
+              onClick={nextStep}
+              className={buttonClass}
+            >
+              {currentStep === steps.length - 1 ? "Finish" : "Next"}
+            </Button>
+          </div>
+        </div>
+      )
+    }
+
+    else {
+      return (
+        <AlertDialogContent className={cardClass}>
+          {
+            step.skipButton && (
+              <X className="h-5 w-5 absolute top-2 right-2 text-muted-foreground hover:text-primary cursor-pointer" />
+            )
+          }
+          <div className={`flex gap-2 ${step.imageUrl && 'flex-col'}`}>
+            {
+              step.imageUrl ? (
+                <img
+                  src={step.imageUrl}
+                  alt={step.title}
+                  width={1600}
+                  height={1600}
+                  className="w-full h-auto rounded-sm object-cover"
+                />
+              ) : null
+            }
+            <div className="flex-1">
+              <AlertDialogTitle className={`
+                    ${titleTextClass}
+                    tracking-tight line-clamp-2`}>{step.title}</AlertDialogTitle>
+              <AlertDialogDescription className={`
+                    ${descriptionTextClass}
+                    tracking-tight line-clamp-2`}>{step.description}</AlertDialogDescription>
+              <div className="flex justify-end gap-2">
+                {
+                  step.backButton && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        previousStep()
+                      }}
+                      className={`${buttonClass} ${skipButtonClass}`}>Back</Button>
+                  )
+                }
+                <Button
+                  onClick={() => {
+                    nextStep()
+                  }}
+                  type="button"
+                  className={`group ${buttonClass}`}>{step.nextButtonText}
+                  <ArrowRight
+                    className="-me-1 ms-2 opacity-60 transition-transform group-hover:translate-x-0.5"
+                    size={16}
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </AlertDialogContent>
+      )
+    }
+  }
+
   return (
     <DemoPenguinContext.Provider
       value={{
@@ -537,63 +592,16 @@ export function DemoPenguinProvider({
                       width: calculateContentPosition(elementPosition, steps[currentStep]?.position)
                         .width,
                     }}
-                    className="bg-background relative z-[100] rounded-lg border p-4 shadow-lg"
+                    className="bg-transparent relative z-[100] w-fit p-0 shadow-lg"
                   >
                     <AnimatePresence mode="wait">
-                      <div>
-                        {
-                          steps[currentStep]?.imageUrl && (
-                            <img
-                              style={{
-                                marginBottom: "16px",
-                              }}
-                              src={steps[currentStep]?.imageUrl}
-                              className="rounded-lg w-full h-full object-cover" />
-                          )
-                        }
-                        <motion.div
-                          key={`tour-content-${currentStep}`}
-                          initial={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
-                          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                          exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
-                          className="overflow-hidden"
-                          transition={{
-                            duration: 0.2,
-                            height: {
-                              duration: 0.4,
-                            },
-                          }}
-                        >
-                          <h2 className="text-lg font-medium">{steps[currentStep]?.title}</h2>
-                          <p className="text-muted-foreground text-sm">{steps[currentStep]?.description}</p>
-                        </motion.div>
-                        <div className="mt-4 flex w-full justify-between">
-                          {currentStep > 0 && (
-                            <button
-                              onClick={previousStep}
-                              disabled={currentStep === 0}
-                              className="text-xs text-muted-foreground hover:text-foreground"
-                            >
-                              Back
-                            </button>
-                          )}
-                          <div className="text-muted-foreground text-xs">
-                            {currentStep + 1} / {steps.length}
-                          </div>
-                          <button
-                            onClick={nextStep}
-                            className="text-xs font-medium text-primary hover:text-primary/90"
-                          >
-                            {currentStep === steps.length - 1 ? "Finish" : "Next"}
-                          </button>
-                        </div>
-                      </div>
+                      {renderStepContent(true, steps[currentStep], theme || defaultTheme, previousStep, nextStep)}
                     </AnimatePresence>
                   </motion.div>
                 </>
               ) : (
                 <AlertDialog open={true}>
-                  {renderStepContent(steps[currentStep], theme || defaultTheme, previousStep, nextStep)}
+                  {renderStepContent(false, steps[currentStep], theme || defaultTheme, previousStep, nextStep)}
                 </AlertDialog>
               )}
             </>
