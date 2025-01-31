@@ -362,10 +362,16 @@ export function DemoPenguinProvider({
     console.log("Current URL:", currentUrl);
 
     fetch(devMode ? DEMO_PENGUIN_API_URL_DEV : DEMO_PENGUIN_API_URL, {
-      headers: {
+      method: 'GET',
+      headers: new Headers({
         'demopenguin-client-token': clientToken,
-        'demopenguin-pathname': currentUrl
-      }
+        'demopenguin-pathname': currentUrl,
+        'demopenguin-user-id': userId || '',
+        'demopenguin-user-email': userEmail || '',
+        'demopenguin-first-name': firstName || '',
+        'demopenguin-last-name': lastName || '',
+        'demopenguin-additional-info': JSON.stringify(additionalInfo || {})
+      })
     })
       .then(response => response.json())
       .then(data => {
@@ -373,7 +379,7 @@ export function DemoPenguinProvider({
         if (data.status === "not found") {
           console.log("DemoPenguin is not found");
           return;
-        } else if (data.status === "inactive") {
+        } else if (data.status === "inactive" && (!data.developmentDomain)) {
           console.log("DemoPenguin is inactive");
           return;
         } else {
