@@ -1,6 +1,6 @@
 {
     "name": "demo-penguin",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "description": "A npm package to use demo-penguin in your project. Add the DemoPenguin component to your project to begin using demo-penguin. More information can be found at https://demopenguin.com",
     "author": "Thomas Park",
     "license": "MIT",
@@ -39,10 +39,6 @@
         "access": "public"
     },
     "peerDependencies": {
-        "@radix-ui/react-alert-dialog": "^1.1.4",
-        "@radix-ui/react-dialog": "^1.0.0",
-        "lucide-react": "^0.471.0",
-        "motion": "^11.17.0",
         "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
         "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
     },
@@ -75,6 +71,10 @@
         "@babel/plugin-transform-runtime": "^7.25.9",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
-        "tailwind-merge": "^2.6.0"
+        "tailwind-merge": "^2.6.0",
+
+        "@radix-ui/react-alert-dialog": "^1.1.4",
+        "lucide-react": "^0.471.0",
+        "motion": "^11.17.0"
     }
 }

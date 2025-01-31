@@ -22,6 +22,22 @@ import { Button } from "./ui/button";
 import { cn } from "./utils";
 
 import { ArrowRight, Torus, X } from "lucide-react";
+import VideoPlayer from "./VideoPlayer";
+import { progressBarItems } from "./progress-bar-options";
+
+export interface Penguin {
+  id: string;
+  applicationId: string;
+  path: string; //the url path for when the dialog is opened
+  createdAt: Date;
+  updatedAt: Date;
+  status: "active" | "inactive";
+  steps: Step[]; //array of steps, could be one
+  stepsCount: number;
+  themeId: string;
+  progressBar: string | null;
+  flowType: "onboarding" | "promotion" | "userGroups" | "feedback";
+}
 
 export interface Step {
   id: string
@@ -31,12 +47,21 @@ export interface Step {
   nextButtonText: string
   description: string
   imageUrl?: string
+  thumbnailUrl?: string
+  videoUrl?: string
   selectorId?: string
   width?: number
   height?: number
   onClickWithinArea?: () => void
-  size: "small" | "medium" | "large";
   position?: "top" | "bottom" | "left" | "right"
+  size: "small" | "medium" | "large";
+  dataInputs: DataInput[];
+}
+
+export interface DataInput {
+  id: string;
+  name: string;
+  type: string;
 }
 
 export interface Theme {
@@ -57,6 +82,7 @@ export interface Theme {
   descriptionTextPaddingY: string;
 
   backgroundColor: string;
+  backgroundColorHex: string;
   shadowColor: string;
   shadowOpacity: string;
   shadowRadius: string;
@@ -104,6 +130,7 @@ const defaultTheme: Theme = {
   descriptionTextPaddingX: "px-0",
   descriptionTextPaddingY: "py-0",
   backgroundColor: "bg-white",
+  backgroundColorHex: "#ffffff",
   shadowColor: "shadow-gray-200",
   shadowOpacity: "shadow-opacity-20",
   shadowRadius: "shadow-radius-0",
@@ -155,8 +182,11 @@ interface DemoPenguinProviderProps {
   className?: string;
   isTourCompleted?: boolean;
   clientToken: string;
-  userId: string;
-  userInfo: any;
+  userId?: string;
+  userEmail?: string;
+  firstName?: string;
+  lastName?: string;
+  additionalInfo?: any;
   devMode?: boolean;
 }
 
@@ -225,8 +255,11 @@ export function DemoPenguinProvider({
   isTourCompleted = false,
   clientToken,
   userId,
-  userInfo,
-  devMode = false,
+  userEmail,
+  firstName,
+  lastName,
+  additionalInfo,
+  devMode,
 }: DemoPenguinProviderProps) {
   const [steps, setSteps] = useState<Step[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
@@ -239,8 +272,8 @@ export function DemoPenguinProvider({
   const [isCompleted, setIsCompleted] = useState(isTourCompleted);
   const [isOpen, setIsOpen] = useState(false);
   const [theme, setTheme] = useState<Theme | null>(null)
-
-
+  const [developmentDomain, setDevelopmentDomain] = useState(false);
+  const [progressBar, setProgressBar] = useState<string | null>(null);
   const updateElementPosition = useCallback(() => {
     if (currentStep >= 0 && currentStep < steps.length) {
       const position = getElementPosition(steps[currentStep]?.selectorId ?? "");
@@ -344,8 +377,10 @@ export function DemoPenguinProvider({
           console.log("DemoPenguin is inactive");
           return;
         } else {
+          setDevelopmentDomain(data.developmentDomain);
           setSteps(data.steps);
           setTheme(data.theme)
+          setProgressBar(data.progressBar)
           console.log("DemoPenguin is active");
           setIsOpen(true);
         }
@@ -353,7 +388,7 @@ export function DemoPenguinProvider({
       .catch(error => console.error('Error:', error));
   }, [clientToken, devMode]);
 
-  const renderStepContent = (highlightStep: boolean, step: Step, theme: Theme, previousStep: () => void, nextStep: () => void) => {
+  const renderStepContent = (highlightStep: boolean, step: Step, progressBar: string | null, theme: Theme, previousStep: () => void, nextStep: () => void, currentStep: number) => {
     console.log("Step:", step);
     console.log("Theme:", theme);
     const sizesToClass = {
@@ -361,7 +396,8 @@ export function DemoPenguinProvider({
       "medium": 'w-[400px]',
       "large": 'w-[500px]'
     }
-    const cardClass = `${theme.backgroundColor} 
+    const cardClass = `
+        ${theme.backgroundColor} 
         ${theme.shadowColor}
         ${theme.shadowOpacity}
         ${theme.shadowRadius}
@@ -374,7 +410,7 @@ export function DemoPenguinProvider({
         ${theme.cardPaddingX}
         ${theme.cardPaddingY}
         ${sizesToClass[step.size]}
-        p-4 shadow-lg`
+        shadow-lg`
 
     const titleTextClass = `${theme.titleTextColor}
         ${theme.titleTextSize}
@@ -390,40 +426,56 @@ export function DemoPenguinProvider({
         ${theme.descriptionTextPaddingX}
         ${theme.descriptionTextPaddingY}`
 
-    const buttonClass = `mt-4
-        ${theme.buttonSize}
-        ${theme.buttonTextColor}
-        ${theme.buttonTextSize}
-        ${theme.buttonBackgroundColor}
-        ${theme.buttonBorderColor}
-        ${theme.buttonBorderRadius}
-        ${theme.buttonBorderWidth}
-        ${theme.buttonBorderStyle}
-        ${theme.buttonTextWeight}
-        ${theme.buttonHoverTextColor}
-        ${theme.buttonHoverBackgroundColor}`
+    const buttonClass = `
+    ${theme.buttonSize}
+    ${theme.buttonTextColor}
+    ${theme.buttonTextSize}
+    ${theme.buttonBackgroundColor}
+    ${theme.buttonBorderColor}
+    ${theme.buttonBorderRadius}
+    ${theme.buttonBorderWidth}
+    ${theme.buttonBorderStyle}
+    ${theme.buttonTextWeight}
+    ${theme.buttonHoverTextColor}
+    ${theme.buttonHoverBackgroundColor}`
 
-    const skipButtonClass = `${theme.skipButtonTextColor} ${theme.skipButtonBackgroundColor} ${theme.skipButtonHoverTextColor} ${theme.skipButtonHoverBackgroundColor}`
+    const skipButtonClass = `
+    ${theme.buttonBorderRadius}
+    ${theme.buttonBorderWidth}
+    ${theme.buttonBorderStyle}
+    ${theme.buttonSize}
+    ${theme.buttonTextWeight}
+    ${theme.skipButtonTextColor} 
+    ${theme.skipButtonBackgroundColor} 
+    ${theme.skipButtonHoverTextColor} 
+    ${theme.skipButtonHoverBackgroundColor}`
 
+    const buttonText = currentStep === steps.length - 1 ? "Done" : step.nextButtonText
     if (highlightStep) {
       return (
         <div className={cardClass}>
           {
+            step.skipButton && (
+              <X className="h-5 w-5 absolute top-2 right-2 text-muted-foreground hover:text-primary cursor-pointer" />
+            )
+          }
+          {
             step.imageUrl && (
               <img
-                style={{
-                  marginBottom: "16px",
-                }}
                 src={step.imageUrl}
                 className="rounded-lg w-full h-full object-cover" />
             )
+          }
+          {step.videoUrl ? (
+            <VideoPlayer src={step.videoUrl} thumbnailSrc={step.thumbnailUrl} />
+          ) : null
           }
           <motion.div
             key={`tour-content-${step.id}`}
             initial={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
             exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
-            className="overflow-hidden"
+            className="overflow-hidden mt-2"
             transition={{
               duration: 0.2,
               height: {
@@ -434,26 +486,45 @@ export function DemoPenguinProvider({
             <h2 className={titleTextClass}>{step.title}</h2>
             <p className={descriptionTextClass}>{step.description}</p>
           </motion.div>
-          <div className="mt-4 flex w-full justify-between">
-            {step.backButton && (
+          <div className={`w-full flex flex-row gap-2 ${progressBar ? 'justify-between' : 'justify-end'} items-center mt-2`}>
+            {
+              progressBar && (
+                //use progressBarItems to find and render only the selected progress bar
+                progressBarItems
+                  .filter(item => item.value === progressBar)
+                  .map((item) => (
+                    <item.component
+                      key={item.value}
+                      currentStepIndex={currentStep}
+                      totalSteps={steps.length}
+                    />
+                  ))
+              )
+            }
+            <div className="flex justify-end gap-2">
+
+              {step.backButton && (
+                <Button
+                  onClick={previousStep}
+                  disabled={currentStep === 0}
+                  className={skipButtonClass}
+                >
+                  Back
+                </Button>
+              )}
               <Button
-                onClick={previousStep}
-                disabled={currentStep === 0}
+                onClick={nextStep}
                 className={buttonClass}
               >
-                Back
+                {buttonText}
               </Button>
-            )}
-            <div className="text-muted-foreground text-xs">
-              {currentStep + 1} / {steps.length}
             </div>
-            <Button
-              onClick={nextStep}
-              className={buttonClass}
-            >
-              {currentStep === steps.length - 1 ? "Finish" : "Next"}
-            </Button>
           </div>
+          {developmentDomain && (
+            <div className="text-muted-foreground bg-orange-500 text-white text-xs absolute -bottom-8 right-2 rounded-b-md p-2">
+              Development Domain
+            </div>
+          )}
         </div>
       )
     }
@@ -461,58 +532,81 @@ export function DemoPenguinProvider({
     else {
       return (
         <AlertDialogContent className={cardClass}>
-          {
-            step.skipButton && (
-              <X className="h-5 w-5 absolute top-2 right-2 text-muted-foreground hover:text-primary cursor-pointer" />
-            )
-          }
-          <div className={`flex gap-2 ${step.imageUrl && 'flex-col'}`}>
+          <>
             {
-              step.imageUrl ? (
+              step.skipButton && (
+                <X className="h-5 w-5 absolute top-2 right-2 text-muted-foreground hover:text-primary cursor-pointer" />
+              )
+            }
+            {
+              step.imageUrl && (
                 <img
                   src={step.imageUrl}
-                  alt={step.title}
-                  width={1600}
-                  height={1600}
-                  className="w-full h-auto rounded-sm object-cover"
-                />
-              ) : null
+                  className="rounded-lg w-full h-full object-cover" />
+              )
             }
-            <div className="flex-1">
-              <AlertDialogTitle className={`
-                    ${titleTextClass}
-                    tracking-tight line-clamp-2`}>{step.title}</AlertDialogTitle>
-              <AlertDialogDescription className={`
-                    ${descriptionTextClass}
-                    tracking-tight line-clamp-2`}>{step.description}</AlertDialogDescription>
+            {step.videoUrl ? (
+              <VideoPlayer src={step.videoUrl} thumbnailSrc={step.thumbnailUrl} />
+            ) : null
+            }
+            <motion.div
+              key={`tour-content-${step.id}`}
+              initial={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
+              className="overflow-hidden mt-2"
+              transition={{
+                duration: 0.2,
+                height: {
+                  duration: 0.4,
+                },
+              }}
+            >
+              <h2 className={titleTextClass}>{step.title}</h2>
+              <p className={descriptionTextClass}>{step.description}</p>
+            </motion.div>
+
+            <div className={`w-full flex flex-row gap-2 ${progressBar ? 'justify-between' : 'justify-end'} items-center mt-2`}>
+              {
+                progressBar && (
+                  //use progressBarItems to find and render only the selected progress bar
+                  progressBarItems
+                    .filter(item => item.value === progressBar)
+                    .map((item) => (
+                      <item.component
+                        key={item.value}
+                        currentStepIndex={currentStep}
+                        totalSteps={steps.length}
+                      />
+                    ))
+                )
+              }
               <div className="flex justify-end gap-2">
-                {
-                  step.backButton && (
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        previousStep()
-                      }}
-                      className={`${buttonClass} ${skipButtonClass}`}>Back</Button>
-                  )
-                }
+
+                {step.backButton && (
+                  <Button
+                    onClick={previousStep}
+                    disabled={currentStep === 0}
+                    className={skipButtonClass}
+                  >
+                    Back
+                  </Button>
+                )}
                 <Button
-                  onClick={() => {
-                    nextStep()
-                  }}
-                  type="button"
-                  className={`group ${buttonClass}`}>{step.nextButtonText}
-                  <ArrowRight
-                    className="-me-1 ms-2 opacity-60 transition-transform group-hover:translate-x-0.5"
-                    size={16}
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  />
+                  onClick={nextStep}
+                  className={buttonClass}
+                >
+                  {buttonText}
                 </Button>
               </div>
             </div>
-          </div>
-        </AlertDialogContent>
+            {developmentDomain && (
+              <div className="text-muted-foreground bg-orange-500 text-white text-xs absolute -bottom-8 right-2 rounded-b-md p-2">
+                Development Domain active
+              </div>
+            )}
+          </>
+        </AlertDialogContent >
       )
     }
   }
@@ -595,19 +689,18 @@ export function DemoPenguinProvider({
                     exit={{ opacity: 0, y: 10 }}
                     style={{
                       position: "absolute",
-                      width: calculateContentPosition(elementPosition, steps[currentStep]?.position)
-                        .width,
+
                     }}
-                    className="bg-transparent relative z-[100] w-fit p-0 shadow-lg"
+                    className="bg-transparent relative z-[100] w-fit p-0"
                   >
                     <AnimatePresence mode="wait">
-                      {renderStepContent(true, steps[currentStep], theme || defaultTheme, previousStep, nextStep)}
+                      {renderStepContent(true, steps[currentStep], progressBar, theme || defaultTheme, previousStep, nextStep, currentStep)}
                     </AnimatePresence>
                   </motion.div>
                 </>
               ) : (
                 <AlertDialog open={true}>
-                  {renderStepContent(false, steps[currentStep], theme || defaultTheme, previousStep, nextStep)}
+                  {renderStepContent(false, steps[currentStep], progressBar, theme || defaultTheme, previousStep, nextStep, currentStep)}
                 </AlertDialog>
               )}
             </>

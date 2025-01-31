@@ -1,9 +1,18 @@
 "use client"
 
-import { DemoPenguinProvider, Step } from "./DemoPenguinProvider"
-import React, { useState, useEffect } from "react" 
+import { DemoPenguinProvider } from "./DemoPenguinProvider"
+import React from "react" 
 
-
+interface DemoPenguinProps {
+  children: React.ReactNode;
+  clientToken: string;
+  userId?: string;
+  userEmail?: string;
+  firstName?: string;
+  lastName?: string;
+  additionalInfo?: any;
+  devMode?: boolean;
+}
 /*
 const steps: DemoPenguinStep[] = [
   {
@@ -58,9 +67,16 @@ const steps: DemoPenguinStep[] = [
 ];
 */
 
-export function DemoPenguinInit({ children, clientToken, userId, userInfo, devMode = false }: { children: React.ReactNode, clientToken: string, userId: string, userInfo: any, devMode?: boolean  }) {
+export function DemoPenguin({ children, clientToken, userId, userEmail, firstName, lastName, additionalInfo, devMode = false }: DemoPenguinProps) {
   return (
-    <DemoPenguinProvider clientToken={clientToken} userId={userId} userInfo={userInfo} devMode={devMode || false}>      
+    <DemoPenguinProvider  
+      clientToken={clientToken} 
+      userId={userId} 
+      userEmail={userEmail} 
+      firstName={firstName} 
+      lastName={lastName} 
+      additionalInfo={additionalInfo} 
+      devMode={devMode || false}>      
       {children}
     </DemoPenguinProvider>
   )

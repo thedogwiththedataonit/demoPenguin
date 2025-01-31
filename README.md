@@ -14,7 +14,7 @@
 For detailed documentation, visit [demopenguin.com](https://demopenguin.com)
 
 ## Example
-Add the DemoPenguinInit component to your root layout component.
+Add the DemoPenguin component to your root layout component.
 
 ```tsx
 export default function RootLayout({
@@ -25,18 +25,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className}`}>
-        <DemoPenguinInit 
+        <DemoPenguin
           clientToken="client-token"
           userId="user-id"
-          userInfo={{
-            name: "John Doe",
-            email: "john.doe@example.com",
-            company: "Example Inc.",
-            role: "Admin",
+          userEmail="user-email"
+          firstName="user-first-name"
+          lastName="user-last-name"
+          additionalInfo={{
+            company: "user-company",
+            role: "user-role"
           }}
         >
           {children}
-        </DemoPenguinInit>
+        </DemoPenguin>
       </body>
     </html>
   );
