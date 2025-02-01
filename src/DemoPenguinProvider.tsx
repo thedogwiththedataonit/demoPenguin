@@ -193,8 +193,8 @@ interface DemoPenguinProviderProps {
 const DemoPenguinContext = createContext<DemoPenguinContextType | null>(null);
 
 const PADDING = 16;
-const CONTENT_WIDTH = 300;
-const CONTENT_HEIGHT = 200;
+const CONTENT_WIDTH = 400;
+const CONTENT_HEIGHT = 600;
 
 function getElementPosition(id: string) {
   const element = document.getElementById(id);
@@ -706,6 +706,9 @@ export function DemoPenguinProvider({
                 </>
               ) : (
                 <AlertDialog open={true}>
+                  <AlertDialogTitle className="hidden">
+                    {steps[currentStep]?.title}
+                  </AlertDialogTitle>
                   {renderStepContent(false, steps[currentStep], progressBar, theme || defaultTheme, previousStep, nextStep, currentStep)}
                 </AlertDialog>
               )}
