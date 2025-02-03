@@ -12,3 +12,5 @@ scripts/
 
 .env
 *.tgz
+
+package-lock.json

@@ -32,3 +32,5 @@ internal_notes.md
 *.tgz
 
 scripts/
+
+package-lock.json
