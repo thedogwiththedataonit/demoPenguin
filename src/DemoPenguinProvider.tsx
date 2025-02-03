@@ -420,11 +420,14 @@ export function DemoPenguinProvider({
         if (data.status === "not found") {
           console.log("DemoPenguin is not found");
           return;
+        } else if (data.status === "error") {
+          console.log(data.error);
+          return;
         } else if (data.status === "inactive" && (!data.developmentDomain)) {
           console.log("DemoPenguin is inactive");
           return;
         } 
-        else if (data.status === "seen") {
+        else if (data.status === "seen" && data.developmentDomain) {
           console.log("DemoPenguin is seen");
           return;
         }
