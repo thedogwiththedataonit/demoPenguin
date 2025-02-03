@@ -427,7 +427,7 @@ export function DemoPenguinProvider({
           console.log("DemoPenguin is inactive");
           return;
         } 
-        else if (data.status === "seen" && data.developmentDomain) {
+        else if (data.status === "seen" && !data.developmentDomain) {
           console.log("DemoPenguin is seen");
           return;
         }
