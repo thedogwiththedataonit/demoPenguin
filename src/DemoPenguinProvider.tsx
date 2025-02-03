@@ -193,8 +193,34 @@ interface DemoPenguinProviderProps {
 const DemoPenguinContext = createContext<DemoPenguinContextType | null>(null);
 
 const PADDING = 16;
-const CONTENT_WIDTH = 400;
-const CONTENT_HEIGHT = 600;
+
+const getStepDimensions = (step: Step) => {
+  const baseHeights = {
+    "small": 250,
+    "medium": 350,
+    "large": 400
+  };
+
+  const mediaHeights = {
+    "small": 350,
+    "medium": 450,
+    "large": 500
+  };
+
+  const sizes = {
+    "small": { width: 300 },
+    "medium": { width: 400 },
+    "large": { width: 500 }
+  };
+  
+  const hasMedia = step.imageUrl || step.videoUrl;
+  const height = hasMedia ? mediaHeights[step.size] : baseHeights[step.size];
+  
+  return {
+    width: sizes[step.size].width,
+    height: height
+  };
+};
 
 function getElementPosition(id: string) {
   const element = document.getElementById(id);
@@ -210,38 +236,51 @@ function getElementPosition(id: string) {
 
 function calculateContentPosition(
   elementPos: { top: number; left: number; width: number; height: number },
+  step: Step,
   position: "top" | "bottom" | "left" | "right" = "bottom"
 ) {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
+  const { width: contentWidth, height: contentHeight } = getStepDimensions(step);
 
   let left = elementPos.left;
   let top = elementPos.top;
 
   switch (position) {
     case "top":
-      top = elementPos.top - CONTENT_HEIGHT - PADDING;
-      left = elementPos.left + elementPos.width / 2 - CONTENT_WIDTH / 2;
+      top = elementPos.top - contentHeight - PADDING;
+      left = elementPos.left + elementPos.width / 2 - contentWidth / 2;
       break;
     case "bottom":
       top = elementPos.top + elementPos.height + PADDING;
-      left = elementPos.left + elementPos.width / 2 - CONTENT_WIDTH / 2;
+      left = elementPos.left + elementPos.width / 2 - contentWidth / 2;
       break;
     case "left":
-      left = elementPos.left - CONTENT_WIDTH - PADDING;
-      top = elementPos.top + elementPos.height / 2 - CONTENT_HEIGHT / 2;
+      left = elementPos.left - contentWidth - PADDING;
+      top = elementPos.top + elementPos.height / 2 - contentHeight / 2;
       break;
     case "right":
       left = elementPos.left + elementPos.width + PADDING;
-      top = elementPos.top + elementPos.height / 2 - CONTENT_HEIGHT / 2;
+      top = elementPos.top + elementPos.height / 2 - contentHeight / 2;
       break;
   }
 
   return {
-    top: Math.max(PADDING, Math.min(top, viewportHeight - CONTENT_HEIGHT - PADDING)),
-    left: Math.max(PADDING, Math.min(left, viewportWidth - CONTENT_WIDTH - PADDING)),
-    width: CONTENT_WIDTH,
-    height: CONTENT_HEIGHT
+    top: Math.max(PADDING, Math.min(top, viewportHeight - contentHeight - PADDING)),
+    left: Math.max(PADDING, Math.min(left, viewportWidth - contentWidth - PADDING)),
+    width: contentWidth,
+    height: contentHeight
+  };
+}
+
+function calculateCenterPosition(step: Step) {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const { width, height } = getStepDimensions(step);
+  
+  return {
+    top: (viewportHeight - height) / 2,
+    left: (viewportWidth - width) / 2
   };
 }
 
@@ -276,9 +315,13 @@ export function DemoPenguinProvider({
   const [progressBar, setProgressBar] = useState<string | null>(null);
   const updateElementPosition = useCallback(() => {
     if (currentStep >= 0 && currentStep < steps.length) {
-      const position = getElementPosition(steps[currentStep]?.selectorId ?? "");
-      if (position) {
-        setElementPosition(position);
+      if (steps[currentStep]?.selectorId) {
+        const position = getElementPosition(steps[currentStep]?.selectorId ?? "");
+        if (position) {
+          setElementPosition(position);
+        }
+      } else {
+        setElementPosition(null);
       }
     }
   }, [currentStep, steps]);
@@ -358,8 +401,6 @@ export function DemoPenguinProvider({
 
   useEffect(() => {
     const currentUrl = window.location.pathname;
-    console.log("DemoPenguin initialized with:", { clientToken });
-    console.log("Current URL:", currentUrl);
 
     fetch(devMode ? DEMO_PENGUIN_API_URL_DEV : DEMO_PENGUIN_API_URL, {
       method: 'GET',
@@ -382,7 +423,12 @@ export function DemoPenguinProvider({
         } else if (data.status === "inactive" && (!data.developmentDomain)) {
           console.log("DemoPenguin is inactive");
           return;
-        } else {
+        } 
+        else if (data.status === "seen") {
+          console.log("DemoPenguin is seen");
+          return;
+        }
+        else {
           setDevelopmentDomain(data.developmentDomain);
           setSteps(data.steps);
           setTheme(data.theme)
@@ -395,8 +441,7 @@ export function DemoPenguinProvider({
   }, [clientToken, devMode]);
 
   const renderStepContent = (highlightStep: boolean, step: Step, progressBar: string | null, theme: Theme, previousStep: () => void, nextStep: () => void, currentStep: number) => {
-    console.log("Step:", step);
-    console.log("Theme:", theme);
+
     const sizesToClass = {
       "small": 'w-[300px]',
       "medium": 'w-[400px]',
@@ -473,7 +518,11 @@ export function DemoPenguinProvider({
             )
           }
           {step.videoUrl ? (
-            <VideoPlayer src={step.videoUrl} thumbnailSrc={step.thumbnailUrl} />
+            <VideoPlayer 
+              key={step.videoUrl}
+              src={step.videoUrl} 
+              thumbnailSrc={step.thumbnailUrl} 
+            />
           ) : null
           }
           <motion.div
@@ -552,7 +601,11 @@ export function DemoPenguinProvider({
               )
             }
             {step.videoUrl ? (
-              <VideoPlayer src={step.videoUrl} thumbnailSrc={step.thumbnailUrl} />
+              <VideoPlayer 
+                key={step.videoUrl}
+                src={step.videoUrl} 
+                thumbnailSrc={step.thumbnailUrl} 
+              />
             ) : null
             }
             <motion.div
@@ -641,79 +694,75 @@ export function DemoPenguinProvider({
         <AnimatePresence>
           {currentStep >= 0 && (
             <>
-              {steps[currentStep]?.selectorId && elementPosition ? (
-                <>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 z-50 overflow-hidden bg-black/50"
-                    style={{
-                      clipPath: `polygon(
-                      0% 0%,                                                                          /* top-left */
-                      0% 100%,                                                                        /* bottom-left */
-                      100% 100%,                                                                      /* bottom-right */
-                      100% 0%,                                                                        /* top-right */
-                      
-                      /* Create rectangular hole */
-                      ${elementPosition.left}px 0%,                                                   /* top edge start */
-                      ${elementPosition.left}px ${elementPosition.top}px,                             /* hole top-left */
-                      ${elementPosition.left + (steps[currentStep]?.width || elementPosition.width)}px ${elementPosition.top}px,  /* hole top-right */
-                      ${elementPosition.left + (steps[currentStep]?.width || elementPosition.width)}px ${elementPosition.top + (steps[currentStep]?.height || elementPosition.height)}px,  /* hole bottom-right */
-                      ${elementPosition.left}px ${elementPosition.top + (steps[currentStep]?.height || elementPosition.height)}px,  /* hole bottom-left */
-                      ${elementPosition.left}px 0%                                                    /* back to top edge */
-                    )`,
-                    }}
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    style={{
-                      position: "absolute",
-                      top: elementPosition.top,
-                      left: elementPosition.left,
-                      width: steps[currentStep]?.width || elementPosition.width,
-                      height: steps[currentStep]?.height || elementPosition.height,
-                    }}
-                    className={cn("z-[100] border-2 border-muted-foreground", className)}
-                  />
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-50 overflow-hidden bg-black/50"
+                style={{
+                  ...(elementPosition && {
+                    clipPath: `polygon(
+                          0% 0%,                                                                          /* top-left */
+                          0% 100%,                                                                        /* bottom-left */
+                          100% 100%,                                                                      /* bottom-right */
+                          100% 0%,                                                                        /* top-right */
+                          
+                          /* Create rectangular hole */
+                          ${elementPosition.left}px 0%,                                                   /* top edge start */
+                          ${elementPosition.left}px ${elementPosition.top}px,                             /* hole top-left */
+                          ${elementPosition.left + (steps[currentStep]?.width || elementPosition.width)}px ${elementPosition.top}px,  /* hole top-right */
+                          ${elementPosition.left + (steps[currentStep]?.width || elementPosition.width)}px ${elementPosition.top + (steps[currentStep]?.height || elementPosition.height)}px,  /* hole bottom-right */
+                          ${elementPosition.left}px ${elementPosition.top + (steps[currentStep]?.height || elementPosition.height)}px,  /* hole bottom-left */
+                          ${elementPosition.left}px 0%                                                    /* back to top edge */
+                        )`
+                  })
+                }}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                style={{
+                  position: "absolute",
+                  top: elementPosition?.top,
+                  left: elementPosition?.left,
+                  width: steps[currentStep]?.width || elementPosition?.width,
+                  height: steps[currentStep]?.height || elementPosition?.height,
+                }}
+                className={cn("z-[100] border-2 border-muted-foreground", className)}
+              />
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, top: 50, right: 50 }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      top: calculateContentPosition(elementPosition, steps[currentStep]?.position).top,
-                      left: calculateContentPosition(elementPosition, steps[currentStep]?.position).left,
-                    }}
-                    transition={{
-                      duration: 0.8,
-                      ease: [0.16, 1, 0.3, 1],
-                      opacity: { duration: 0.4 },
-                    }}
-                    exit={{ opacity: 0, y: 10 }}
-                    style={{
-                      position: "absolute",
-
-                    }}
-                    className="bg-transparent relative z-[100] w-fit p-0"
-                  >
-                    <AnimatePresence mode="wait">
-                      {renderStepContent(true, steps[currentStep], progressBar, theme || defaultTheme, previousStep, nextStep, currentStep)}
-                    </AnimatePresence>
-                  </motion.div>
-                </>
-              ) : (
-                <AlertDialog open={true}>
-                  <AlertDialogTitle className="hidden">
-                    {steps[currentStep]?.title}
-                  </AlertDialogTitle>
-                  {renderStepContent(false, steps[currentStep], progressBar, theme || defaultTheme, previousStep, nextStep, currentStep)}
-                </AlertDialog>
-              )}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                  top: elementPosition
+                    ? calculateContentPosition(elementPosition, steps[currentStep], steps[currentStep]?.position).top
+                    : `${calculateCenterPosition(steps[currentStep]).top}px`,
+                  left: elementPosition
+                    ? calculateContentPosition(elementPosition, steps[currentStep], steps[currentStep]?.position).left
+                    : `${calculateCenterPosition(steps[currentStep]).left}px`,
+                }}
+                transition={{
+                  duration: 0.8,
+                  ease: [0.16, 1, 0.3, 1],
+                  opacity: { duration: 0.4 },
+                }}
+                exit={{ opacity: 0, y: 10 }}
+                style={{
+                  position: "absolute",
+                  transform: elementPosition ? 'none' : 'none'
+                }}
+                className="bg-transparent relative z-[100] w-fit p-0"
+              >
+                <AnimatePresence mode="wait">
+                  {renderStepContent(true, steps[currentStep], progressBar, theme || defaultTheme, previousStep, nextStep, currentStep)}
+                </AnimatePresence>
+              </motion.div>
             </>
           )}
+
         </AnimatePresence>
       )}
     </DemoPenguinContext.Provider>
