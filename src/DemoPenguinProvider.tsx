@@ -21,7 +21,7 @@ import {
 import { Button } from "./ui/button";
 import { cn } from "./utils";
 
-import { ArrowRight, Torus, X } from "lucide-react";
+import { X } from "lucide-react";
 import VideoPlayer from "./VideoPlayer";
 import { progressBarItems } from "./progress-bar-options";
 
@@ -53,7 +53,8 @@ export interface Step {
   width?: number
   height?: number
   onClickWithinArea?: () => void
-  position?: "top" | "bottom" | "left" | "right"
+  position: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right" | "left-center" | "right-center" | "center"
+  backdrop: boolean
   size: "small" | "medium" | "large";
   dataInputs: DataInput[];
 }
@@ -190,6 +191,53 @@ interface DemoPenguinProviderProps {
   devMode?: boolean;
 }
 
+interface PathChangeConfig {
+  onPathChange?: (newPath: string, oldPath: string) => void;
+  shouldTrigger?: (newPath: string, oldPath: string) => boolean;
+}
+
+function usePathMonitor({ onPathChange, shouldTrigger }: PathChangeConfig = {}) {
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+
+  const handlePathChange = useCallback((newPath: string) => {
+    if (newPath !== currentPath) {
+      if (!shouldTrigger || shouldTrigger(newPath, currentPath)) {
+        onPathChange?.(newPath, currentPath);
+        setCurrentPath(newPath);
+      }
+    }
+  }, [currentPath, onPathChange, shouldTrigger]);
+
+  useEffect(() => {
+    // Check for initial path change
+    handlePathChange(window.location.pathname);
+
+    // Setup listeners for different types of navigation
+    const checkPath = () => handlePathChange(window.location.pathname);
+
+    // Listen for popstate (browser back/forward)
+    window.addEventListener('popstate', checkPath);
+
+    // Create observer for URL changes
+    const observer = new MutationObserver(() => {
+      handlePathChange(window.location.pathname);
+    });
+
+    // Observe changes to the URL
+    observer.observe(document.querySelector('body')!, {
+      subtree: true,
+      childList: true
+    });
+
+    return () => {
+      window.removeEventListener('popstate', checkPath);
+      observer.disconnect();
+    };
+  }, [handlePathChange]);
+
+  return currentPath;
+}
+
 const DemoPenguinContext = createContext<DemoPenguinContextType | null>(null);
 
 const PADDING = 16;
@@ -212,10 +260,10 @@ const getStepDimensions = (step: Step) => {
     "medium": { width: 400 },
     "large": { width: 500 }
   };
-  
+
   const hasMedia = step.imageUrl || step.videoUrl;
   const height = hasMedia ? mediaHeights[step.size] : baseHeights[step.size];
-  
+
   return {
     width: sizes[step.size].width,
     height: height
@@ -236,52 +284,124 @@ function getElementPosition(id: string) {
 
 function calculateContentPosition(
   elementPos: { top: number; left: number; width: number; height: number },
-  step: Step,
-  position: "top" | "bottom" | "left" | "right" = "bottom"
+  step: Step
 ) {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const { width: contentWidth, height: contentHeight } = getStepDimensions(step);
+  const MINIMUM_SPACE = PADDING * 2; // Minimum space needed for content
 
-  let left = elementPos.left;
-  let top = elementPos.top;
+  // Calculate available space in each direction
+  const spaceAbove = elementPos.top;
+  const spaceBelow = viewportHeight - (elementPos.top + elementPos.height);
+  const spaceLeft = elementPos.left;
+  const spaceRight = viewportWidth - (elementPos.left + elementPos.width);
 
-  switch (position) {
-    case "top":
-      top = elementPos.top - contentHeight - PADDING;
-      left = elementPos.left + elementPos.width / 2 - contentWidth / 2;
-      break;
-    case "bottom":
-      top = elementPos.top + elementPos.height + PADDING;
-      left = elementPos.left + elementPos.width / 2 - contentWidth / 2;
-      break;
-    case "left":
-      left = elementPos.left - contentWidth - PADDING;
-      top = elementPos.top + elementPos.height / 2 - contentHeight / 2;
-      break;
-    case "right":
-      left = elementPos.left + elementPos.width + PADDING;
-      top = elementPos.top + elementPos.height / 2 - contentHeight / 2;
-      break;
-  }
+  // Calculate positions for each direction
+  const positions = {
+    top: {
+      top: elementPos.top - contentHeight - PADDING,
+      left: elementPos.left + elementPos.width / 2 - contentWidth / 2,
+      space: spaceAbove,
+      fits: spaceAbove >= contentHeight + MINIMUM_SPACE
+    },
+    bottom: {
+      top: elementPos.top + elementPos.height + PADDING,
+      left: elementPos.left + elementPos.width / 2 - contentWidth / 2,
+      space: spaceBelow,
+      fits: spaceBelow >= contentHeight + MINIMUM_SPACE
+    },
+    left: {
+      top: elementPos.top + elementPos.height / 2 - contentHeight / 2,
+      left: elementPos.left - contentWidth - PADDING,
+      space: spaceLeft,
+      fits: spaceLeft >= contentWidth + MINIMUM_SPACE
+    },
+    right: {
+      top: elementPos.top + elementPos.height / 2 - contentHeight / 2,
+      left: elementPos.left + elementPos.width + PADDING,
+      space: spaceRight,
+      fits: spaceRight >= contentWidth + MINIMUM_SPACE
+    }
+  };
 
+  // Find the best position by checking which has the most available space
+  const bestPosition = Object.entries(positions)
+    .filter(([_, pos]) => pos.fits)
+    .sort((a, b) => b[1].space - a[1].space)[0]?.[0] || 'bottom';
+
+  const bestPos = positions[bestPosition as keyof typeof positions];
+  const { top, left } = bestPos;
+
+  // Ensure content stays within viewport bounds
   return {
     top: Math.max(PADDING, Math.min(top, viewportHeight - contentHeight - PADDING)),
     left: Math.max(PADDING, Math.min(left, viewportWidth - contentWidth - PADDING)),
     width: contentWidth,
-    height: contentHeight
+    height: contentHeight,
+    position: bestPosition // Return the chosen position for reference
   };
 }
 
-function calculateCenterPosition(step: Step) {
+function calculateStaticPosition(step: Step) {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const { width, height } = getStepDimensions(step);
-  
-  return {
-    top: (viewportHeight - height) / 2,
-    left: (viewportWidth - width) / 2
-  };
+  if (step.position) {
+    switch (step.position) {
+      case "top-left":
+        return {
+          top: PADDING,
+          left: PADDING
+        }
+      case "top-center":
+        return {
+          top: PADDING,
+          left: (viewportWidth - width) / 2
+        }
+      case "top-right":
+        return {
+          top: PADDING,
+          left: viewportWidth - width
+        }
+      case "bottom-left":
+        return {
+          top: viewportHeight - height - PADDING,
+          left: PADDING
+        }
+      case "bottom-center":
+        return {
+          top: viewportHeight - height - PADDING,
+          left: (viewportWidth - width) / 2
+        }
+      case "bottom-right":
+        return {
+          top: viewportHeight - height - PADDING, 
+          left: viewportWidth - width - PADDING
+        }
+      case "left-center":
+        return {
+          top: (viewportHeight - height) / 2,
+          left: PADDING
+        }
+      case "right-center":
+        return {
+          top: (viewportHeight - height) / 2,
+          left: viewportWidth - width
+        }
+      case "center":
+        return {
+          top: (viewportHeight - height) / 2,
+          left: (viewportWidth - width) / 2
+        }
+    } 
+  }
+  else {
+    return {
+      top: (viewportHeight - height) / 2,
+      left: (viewportWidth - width) / 2
+    };
+  }
 }
 
 const DEMO_PENGUIN_API_URL = "https://www.demopenguin.com/api/v1/get/penguin";
@@ -325,6 +445,7 @@ export function DemoPenguinProvider({
       }
     }
   }, [currentStep, steps]);
+
 
   useEffect(() => {
     updateElementPosition();
@@ -399,14 +520,12 @@ export function DemoPenguinProvider({
     setIsCompleted(completed);
   }, []);
 
-  useEffect(() => {
-    const currentUrl = window.location.pathname;
-
+  const fetchDemoPenguinData = (pathname: string) => {
     fetch(devMode ? DEMO_PENGUIN_API_URL_DEV : DEMO_PENGUIN_API_URL, {
       method: 'GET',
       headers: new Headers({
         'demopenguin-client-token': clientToken,
-        'demopenguin-pathname': currentUrl,
+        'demopenguin-pathname': pathname,
         'demopenguin-user-id': userId || '',
         'demopenguin-user-email': userEmail || '',
         'demopenguin-first-name': firstName || '',
@@ -426,7 +545,7 @@ export function DemoPenguinProvider({
         } else if (data.status === "inactive" && (!data.developmentDomain)) {
           console.log("DemoPenguin is inactive");
           return;
-        } 
+        }
         else if (data.status === "seen" && !data.developmentDomain) {
           console.log("DemoPenguin is seen");
           return;
@@ -441,7 +560,26 @@ export function DemoPenguinProvider({
         }
       })
       .catch(error => console.error('Error:', error));
+  };
+
+  useEffect(() => {
+    const currentUrl = window.location.pathname;
+    fetchDemoPenguinData(currentUrl);
   }, [clientToken, devMode]);
+
+  const currentPath = usePathMonitor({
+    onPathChange: (newPath, oldPath) => {
+      console.log(`Path changed from ${oldPath} to ${newPath}`);
+      // Add your path change logic here
+      // For example, refetch demo penguin data
+      fetchDemoPenguinData(newPath); // You'll need to extract your fetch logic into a function
+    },
+    shouldTrigger: (newPath, oldPath) => {
+      // Optional: Add conditions for when path changes should trigger actions
+      // For example, ignore hash changes or specific paths
+      return true;
+    }
+  });
 
   const renderStepContent = (highlightStep: boolean, step: Step, progressBar: string | null, theme: Theme, previousStep: () => void, nextStep: () => void, currentStep: number) => {
 
@@ -521,10 +659,10 @@ export function DemoPenguinProvider({
             )
           }
           {step.videoUrl ? (
-            <VideoPlayer 
+            <VideoPlayer
               key={step.videoUrl}
-              src={step.videoUrl} 
-              thumbnailSrc={step.thumbnailUrl} 
+              src={step.videoUrl}
+              thumbnailSrc={step.thumbnailUrl}
             />
           ) : null
           }
@@ -604,10 +742,10 @@ export function DemoPenguinProvider({
               )
             }
             {step.videoUrl ? (
-              <VideoPlayer 
+              <VideoPlayer
                 key={step.videoUrl}
-                src={step.videoUrl} 
-                thumbnailSrc={step.thumbnailUrl} 
+                src={step.videoUrl}
+                thumbnailSrc={step.thumbnailUrl}
               />
             ) : null
             }
@@ -701,7 +839,7 @@ export function DemoPenguinProvider({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 z-50 overflow-hidden bg-black/50"
+                className={`absolute inset-0 z-50 overflow-hidden ${steps[currentStep]?.backdrop ? 'bg-black/50' : ''}`}
                 style={{
                   ...(elementPosition && {
                     clipPath: `polygon(
@@ -741,11 +879,11 @@ export function DemoPenguinProvider({
                   opacity: 1,
                   y: 0,
                   top: elementPosition
-                    ? calculateContentPosition(elementPosition, steps[currentStep], steps[currentStep]?.position).top
-                    : `${calculateCenterPosition(steps[currentStep]).top}px`,
+                    ? calculateContentPosition(elementPosition, steps[currentStep]).top
+                    : `${calculateStaticPosition(steps[currentStep]).top}px`,
                   left: elementPosition
-                    ? calculateContentPosition(elementPosition, steps[currentStep], steps[currentStep]?.position).left
-                    : `${calculateCenterPosition(steps[currentStep]).left}px`,
+                    ? calculateContentPosition(elementPosition, steps[currentStep]).left
+                    : `${calculateStaticPosition(steps[currentStep]).left}px`,
                 }}
                 transition={{
                   duration: 0.8,
