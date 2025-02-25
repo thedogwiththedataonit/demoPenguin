@@ -7,10 +7,9 @@ interface DemoPenguinProps {
   children: React.ReactNode;
   clientToken: string;
   userId?: string;
-  userEmail?: string;
-  firstName?: string;
-  lastName?: string;
-  additionalInfo?: any;
+  variables?: {
+    [key: string]: string;
+  };
   devMode?: boolean;
 }
 /*
@@ -67,15 +66,12 @@ const steps: DemoPenguinStep[] = [
 ];
 */
 
-export function DemoPenguin({ children, clientToken, userId, userEmail, firstName, lastName, additionalInfo, devMode = false }: DemoPenguinProps) {
+export function DemoPenguin({ children, clientToken, userId, variables, devMode = false }: DemoPenguinProps) {
   return (
     <DemoPenguinProvider  
       clientToken={clientToken} 
       userId={userId} 
-      userEmail={userEmail} 
-      firstName={firstName} 
-      lastName={lastName} 
-      additionalInfo={additionalInfo} 
+      variables={variables} 
       devMode={devMode || false}>      
       {children}
     </DemoPenguinProvider>
