@@ -612,7 +612,6 @@ export function DemoPenguinProvider({
       }
     }
 
-    console.log(timeSpent);
     const event: StepEvent = {
       env: devMode ? "development" : "production",
       stepId: steps[currentStep].id,
@@ -694,16 +693,16 @@ export function DemoPenguinProvider({
     setIsCompleted(completed);
   }, []);
 
+
   const fetchDemoPenguinData = (pathname: string) => {
     if (typeof window === 'undefined') return;
-    
     fetch(devMode ? DEMO_PENGUIN_API_URL_DEV : DEMO_PENGUIN_API_URL, {
       method: 'GET',
       headers: new Headers({
         'demopenguin-client-token': clientToken,
         'demopenguin-pathname': pathname,
         'demopenguin-user-info': userInfo ? JSON.stringify(userInfo) : '',
-        'demopenguin-variables': JSON.stringify(variables || {})
+        'demopenguin-variables': JSON.stringify(variables || {}),
       })
     })
       .then(response => response.json())
