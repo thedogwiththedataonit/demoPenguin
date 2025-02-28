@@ -562,6 +562,10 @@ export function DemoPenguinProvider({
           eventType: "completion", // New event type for completion
           timestamp: Date.now(),
           userId: userInfo?.userId,
+          userFirstName: userInfo?.userFirstName,
+          userLastName: userInfo?.userLastName,
+          userEmail: userInfo?.userEmail,
+          userType: userInfo?.userType,
           timeSpent: timeSpent
         };
         
