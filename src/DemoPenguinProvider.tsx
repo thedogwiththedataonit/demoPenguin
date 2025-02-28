@@ -10,18 +10,9 @@ yalc publish --push
 ---
 */
 
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "./ui/alert-dialog";
-import { Button } from "./ui/button";
 import { cn } from "./utils";
 
-import { X } from "lucide-react";
+import { ExternalLink, Route, X } from "lucide-react";
 import VideoPlayer from "./VideoPlayer";
 import { progressBarItems } from "./progress-bar-options";
 
@@ -39,138 +30,170 @@ export interface Penguin {
   flowType: "onboarding" | "promotion" | "userGroups" | "feedback";
 }
 
-export interface Step {
+
+export type Step = {
   id: string
-  title: string
-  backButton: boolean
-  skipButton: boolean
-  nextButtonText: string
-  description: string
+  rows: StepRow[]
+
+  onHover: string
+  animation: string //different default animation styles (fade in, maybe each row with a delay)
+  fullscreen: boolean // whether or not to have the step encompass the fullscreen, this means there is no card, or the card is transparent
+  px: string //tailwind px-2
+  py: string //tailwind py-2
+
+  position: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right" | "left-center" | "right-center" | "center"
+  selectorId?: string
+  backdrop: boolean
+
+  width: string,
+  height: string,
+
+
+  //card styles
+  cardShadowSize: string
+  cardBackgroundColor: string  // can also be gradient
+  cardBorderWidth: string;
+  cardBorderStyle: string;
+  cardRadius: string;
+  cardBorderColor: string;
+
+}
+
+export type StepRow = { //steps will have auto height 
+  paddingTop: string
+  paddingBottom: string
+  paddingLeft: string
+  paddingRight: string
+  borderColor: string
+  borderWidth: string
+  borderStyle: string
+  border: "solid" | "dashed" | "dotted" | "double" | "groove" | "ridge" | "inset" | "outset"
+  borderSide: "top" | "bottom" | "left" | "right" | "top-bottom" | "left-right" | "default"
+  rowItems: (StepText | StepImage | StepButton | StepProgressBar | StepInput | StepVideo)[]
+  rowGap: string
+}
+
+export type StepImage = {
+  stepType: "image"
   imageUrl?: string
   thumbnailUrl?: string
   videoUrl?: string
-  selectorId?: string
-  width?: number
-  height?: number
-  onClickWithinArea?: () => void
-  position: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right" | "left-center" | "right-center" | "center"
-  backdrop: boolean
-  size: "small" | "medium" | "large";
-  dataInputs: DataInput[];
+  videoId?: string
+  px: string //tailwind px-2
+  py: string //tailwind py-2
+
+  height?: string
+  width?: string
+  //size: "small" | "medium" | "large" | "custom" maybe we don't need this if we define the w and h
+  objectFit?: "object-cover" | "object-fill" | "object-contain" //if the height or width is defined, we need to set the object fit
+
+  imageBackgroundColor: string
+  imageBorderColor: string;
+  imageBorderWidth: string;
+  imageRadius: string
 }
 
-export interface DataInput {
-  id: string;
-  name: string;
-  type: string;
+export type StepVideo = {
+  stepType: "video"
+  width: string  //auto will be sized based on the children rows
+  height: string  //auto will be sized based on the children rows
+  //size: "small" | "medium" | "large" | "custom" maybe we don't need this if we define the w and h
+  px: string //tailwind px-2
+  py: string //tailwind py-2
 }
 
-export interface Theme {
-  id: string;
-  name: string;
-  titleTextColor: string;
-  titleTextSize: string;
-  titleTextWeight: string;
-  titleTextAlign: string;
-  titleTextPaddingX: string;
-  titleTextPaddingY: string;
 
-  descriptionTextColor: string;
-  descriptionTextSize: string;
-  descriptionTextWeight: string;
-  descriptionTextAlign: string;
-  descriptionTextPaddingX: string;
-  descriptionTextPaddingY: string;
+export type StepText = {
+  stepType: "text"
+  text: string //the actual text
+  link: string | null //if the text is a link, it will be a url, if its a link it will have an underline
 
-  backgroundColor: string;
-  backgroundColorHex: string;
-  shadowColor: string;
-  shadowOpacity: string;
-  shadowRadius: string;
-  shadowOffsetX: string;
-  shadowOffsetY: string;
+  px: string //tailwind px-2
+  py: string //tailwind py-2
+  textWeight: string
+  textSize: string
+  textColor: string //not tailwind, justa hex string
+  textSpacing: string //tracking-tx
+  textAlign: string
 
-  cardRadius: string;
-  cardBorderColor: string;
-  cardBorderWidth: string;
-  cardBorderStyle: string;
-  cardPaddingX: string;
-  cardPaddingY: string;
+}
 
-  skipButtonTextColor: string;
-  skipButtonBackgroundColor: string;
-  skipButtonHoverTextColor: string;
-  skipButtonHoverBackgroundColor: string;
+export type StepButton = {
+  stepType: "button"
+  buttonType: "next" | "previous" | "skip" | "back" | "submit" | "navigate"
+  navigation: {
+    text: string
+    url: string
+    type: "internal" | "external";
+  }
+  text: string //the actual text
 
-  buttonSize: string;
+  px: string //tailwind px-2
+  py: string //tailwind py-2
+
+  onHover: string;
   buttonTextColor: string;
   buttonHoverTextColor: string;
-  buttonTextSize: string;
   buttonBackgroundColor: string;
   buttonHoverBackgroundColor: string;
+  buttonTextSize: string;
   buttonBorderColor: string;
-  buttonBorderRadius: string;
+  buttonRadius: string;
   buttonBorderWidth: string;
   buttonBorderStyle: string;
   buttonTextWeight: string;
+  buttonAlign: string; //text-center, text-left, text-right
 }
 
-const defaultTheme: Theme = {
-  id: 'default-light',
-  name: "Default Light",
-  titleTextColor: "text-gray-800",
-  titleTextSize: "text-lg",
-  titleTextWeight: "font-medium",
-  titleTextAlign: "text-left",
-  titleTextPaddingX: "px-0",
-  titleTextPaddingY: "py-0",
-  descriptionTextColor: "text-gray-600",
-  descriptionTextSize: "text-sm",
-  descriptionTextWeight: "font-medium",
-  descriptionTextAlign: "text-left",
-  descriptionTextPaddingX: "px-0",
-  descriptionTextPaddingY: "py-0",
-  backgroundColor: "bg-white",
-  backgroundColorHex: "#ffffff",
-  shadowColor: "shadow-gray-200",
-  shadowOpacity: "shadow-opacity-20",
-  shadowRadius: "shadow-radius-0",
-  shadowOffsetX: "shadow-offset-x-0",
-  shadowOffsetY: "shadow-offset-y-0",
-  cardRadius: "rounded-sm",
-  cardBorderColor: "border-black",
-  cardBorderWidth: "border-0",
-  cardBorderStyle: "solid",
-  cardPaddingX: "px-2",
-  cardPaddingY: "py-2",
-  skipButtonTextColor: "text-white",
-  skipButtonBackgroundColor: "bg-gray-400",
-  skipButtonHoverTextColor: "hover:text-white",
-  skipButtonHoverBackgroundColor: "hover:bg-gray-600",
-  buttonSize: "h-8",
-  buttonTextColor: "text-white",
-  buttonTextSize: "text-sm",
-  buttonBackgroundColor: "bg-gray-800",
-  buttonHoverTextColor: "hover:text-white",
-  buttonHoverBackgroundColor: "hover:bg-gray-600",
-  buttonBorderColor: "border-black",
-  buttonBorderRadius: "rounded-sm",
-  buttonBorderWidth: "border-0",
-  buttonBorderStyle: "solid",
-  buttonTextWeight: "font-normal",
+export type StepProgressBar = {
+  stepType: "progressBar"
+  px: string //tailwind px-2
+  py: string //tailwind py-2
+  verticalAlign: "items-center" | "items-start" | "items-end",
+  horizontalAlign: "justify-center" | "justify-start" | "justify-end",
+  currentStepIndex: number
+  totalSteps: number
+  progressBarType: string
 }
+
+export type StepInput = {
+  stepType: "input"
+  px: string //tailwind px-2
+  py: string //tailwind py-2
+
+
+  inputType: string // text, email, number, feedback
+  inputLabel: boolean
+  inputPlaceholder: string
+  inputId: string
+  inputName: string
+  inputValue: string
+  inputRequired: boolean
+}
+
+export type StepEvent = {
+  env: "development" | "production"
+  stepId: string;
+  penguinId: string;
+  flowType: string;
+  clientToken: string;
+  eventType: "next" | "previous" | "skip" | "back" | "submit" | "navigate" | "playedVideo" | "completion"
+  timestamp: number //in milliseconds since epoch
+  userId?: string;
+  timeSpent: number;
+}
+
 
 interface DemoPenguinContextType {
   currentStep: number;
   totalSteps: number;
-  nextStep: () => void;
+  nextStep: (buttonType: string) => void;
   previousStep: () => void;
   endTour: () => void;
   isActive: boolean;
   startTour: () => void;
   setSteps: (steps: Step[]) => void;
   steps: Step[];
-  theme: Theme;
   isTourCompleted: boolean;
   setIsTourCompleted: (completed: boolean) => void;
   isOpen: boolean;
@@ -183,11 +206,16 @@ interface DemoPenguinProviderProps {
   className?: string;
   isTourCompleted?: boolean;
   clientToken: string;
-  userId?: string;
-  userEmail?: string;
-  firstName?: string;
-  lastName?: string;
-  additionalInfo?: any;
+  userInfo: {
+    userId?: string;
+    userFirstName?: string;
+    userLastName?: string;
+    userEmail?: string;
+    userType?: string;
+  };
+  variables?: {
+    [key: string]: string;
+  };
   devMode?: boolean;
 }
 
@@ -197,10 +225,15 @@ interface PathChangeConfig {
 }
 
 function usePathMonitor({ onPathChange, shouldTrigger }: PathChangeConfig = {}) {
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [currentPath, setCurrentPath] = useState('');
+
+  // Initialize the path once the component mounts (client-side only)
+  useEffect(() => {
+    setCurrentPath(window.location.pathname);
+  }, []);
 
   const handlePathChange = useCallback((newPath: string) => {
-    if (newPath !== currentPath) {
+    if (newPath !== currentPath && currentPath !== '') {
       if (!shouldTrigger || shouldTrigger(newPath, currentPath)) {
         onPathChange?.(newPath, currentPath);
         setCurrentPath(newPath);
@@ -209,6 +242,9 @@ function usePathMonitor({ onPathChange, shouldTrigger }: PathChangeConfig = {}) 
   }, [currentPath, onPathChange, shouldTrigger]);
 
   useEffect(() => {
+    // Only run this effect on the client
+    if (typeof window === 'undefined') return;
+    
     // Check for initial path change
     handlePathChange(window.location.pathname);
 
@@ -224,10 +260,13 @@ function usePathMonitor({ onPathChange, shouldTrigger }: PathChangeConfig = {}) 
     });
 
     // Observe changes to the URL
-    observer.observe(document.querySelector('body')!, {
-      subtree: true,
-      childList: true
-    });
+    const bodyElement = document.querySelector('body');
+    if (bodyElement) {
+      observer.observe(bodyElement, {
+        subtree: true,
+        childList: true
+      });
+    }
 
     return () => {
       window.removeEventListener('popstate', checkPath);
@@ -243,30 +282,10 @@ const DemoPenguinContext = createContext<DemoPenguinContextType | null>(null);
 const PADDING = 16;
 
 const getStepDimensions = (step: Step) => {
-  const baseHeights = {
-    "small": 250,
-    "medium": 350,
-    "large": 400
-  };
-
-  const mediaHeights = {
-    "small": 350,
-    "medium": 450,
-    "large": 500
-  };
-
-  const sizes = {
-    "small": { width: 300 },
-    "medium": { width: 400 },
-    "large": { width: 500 }
-  };
-
-  const hasMedia = step.imageUrl || step.videoUrl;
-  const height = hasMedia ? mediaHeights[step.size] : baseHeights[step.size];
 
   return {
-    width: sizes[step.size].width,
-    height: height
+    width: parseInt(step.width.replace("px", "")),
+    height: parseInt(step.height.replace("px", ""))
   };
 };
 
@@ -288,37 +307,41 @@ function calculateContentPosition(
 ) {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
+  const scrollY = window.scrollY;
   const { width: contentWidth, height: contentHeight } = getStepDimensions(step);
-  const MINIMUM_SPACE = PADDING * 2; // Minimum space needed for content
+  const MINIMUM_SPACE = PADDING * 2;
 
-  // Calculate available space in each direction
-  const spaceAbove = elementPos.top;
-  const spaceBelow = viewportHeight - (elementPos.top + elementPos.height);
+  // Calculate element position relative to viewport
+  const elementViewportTop = elementPos.top - scrollY;
+
+  // Calculate available space in each direction relative to viewport
+  const spaceAbove = elementViewportTop;
+  const spaceBelow = viewportHeight - (elementViewportTop + elementPos.height);
   const spaceLeft = elementPos.left;
   const spaceRight = viewportWidth - (elementPos.left + elementPos.width);
 
   // Calculate positions for each direction
   const positions = {
     top: {
-      top: elementPos.top - contentHeight - PADDING,
+      top: elementViewportTop - contentHeight - PADDING,
       left: elementPos.left + elementPos.width / 2 - contentWidth / 2,
       space: spaceAbove,
       fits: spaceAbove >= contentHeight + MINIMUM_SPACE
     },
     bottom: {
-      top: elementPos.top + elementPos.height + PADDING,
+      top: elementViewportTop + elementPos.height + PADDING,
       left: elementPos.left + elementPos.width / 2 - contentWidth / 2,
       space: spaceBelow,
       fits: spaceBelow >= contentHeight + MINIMUM_SPACE
     },
     left: {
-      top: elementPos.top + elementPos.height / 2 - contentHeight / 2,
+      top: elementViewportTop + elementPos.height / 2 - contentHeight / 2,
       left: elementPos.left - contentWidth - PADDING,
       space: spaceLeft,
       fits: spaceLeft >= contentWidth + MINIMUM_SPACE
     },
     right: {
-      top: elementPos.top + elementPos.height / 2 - contentHeight / 2,
+      top: elementViewportTop + elementPos.height / 2 - contentHeight / 2,
       left: elementPos.left + elementPos.width + PADDING,
       space: spaceRight,
       fits: spaceRight >= contentWidth + MINIMUM_SPACE
@@ -339,7 +362,7 @@ function calculateContentPosition(
     left: Math.max(PADDING, Math.min(left, viewportWidth - contentWidth - PADDING)),
     width: contentWidth,
     height: contentHeight,
-    position: bestPosition // Return the chosen position for reference
+    position: bestPosition
   };
 }
 
@@ -376,7 +399,7 @@ function calculateStaticPosition(step: Step) {
         }
       case "bottom-right":
         return {
-          top: viewportHeight - height - PADDING, 
+          top: viewportHeight - height - PADDING,
           left: viewportWidth - width - PADDING
         }
       case "left-center":
@@ -394,7 +417,7 @@ function calculateStaticPosition(step: Step) {
           top: (viewportHeight - height) / 2,
           left: (viewportWidth - width) / 2
         }
-    } 
+    }
   }
   else {
     return {
@@ -407,17 +430,59 @@ function calculateStaticPosition(step: Step) {
 const DEMO_PENGUIN_API_URL = "https://www.demopenguin.com/api/v1/get/penguin";
 const DEMO_PENGUIN_API_URL_DEV = "http://localhost:3000/api/v1/get/penguin";
 
+const DEMO_PENGUIN_API_URL_EVENTS = "https://www.demopenguin.com/api/v1/events";
+const DEMO_PENGUIN_API_URL_EVENTS_DEV = "http://localhost:3000/api/v1/events";
+
+function scrollIntoViewIfNeeded(element: HTMLElement | null) {
+  if (!element || typeof window === 'undefined') return Promise.resolve();
+  
+  // Get element's position relative to viewport
+  const rect = element.getBoundingClientRect();
+  
+  // Check if element is fully visible in viewport
+  const isInViewport = 
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+
+  if (!isInViewport) {
+    // Calculate ideal scroll position to center element
+    const elementTop = rect.top + window.pageYOffset;
+    const elementHeight = rect.height;
+    const viewportHeight = window.innerHeight;
+    const targetScrollTop = elementTop - (viewportHeight - elementHeight) / 2;
+
+    // Smooth scroll to position
+    window.scrollTo({
+      top: targetScrollTop,
+      behavior: 'smooth'
+    });
+
+    // Add a small delay to ensure scroll completes before showing tooltip
+    return new Promise(resolve => setTimeout(resolve, 500));
+  }
+  
+  return Promise.resolve();
+}
+
+const interpolateVariables = (text: string, variables?: { [key: string]: string }) => {
+  if (!variables) return text;
+  
+  return text.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
+    const trimmedKey = key.trim();
+    return variables[trimmedKey] || match; // Return original {{value}} if no variable found
+  });
+};
+
 export function DemoPenguinProvider({
   children,
   onComplete,
   className,
   isTourCompleted = false,
   clientToken,
-  userId,
-  userEmail,
-  firstName,
-  lastName,
-  additionalInfo,
+  userInfo,
+  variables,
   devMode,
 }: DemoPenguinProviderProps) {
   const [steps, setSteps] = useState<Step[]>([]);
@@ -430,12 +495,20 @@ export function DemoPenguinProvider({
   } | null>(null);
   const [isCompleted, setIsCompleted] = useState(isTourCompleted);
   const [isOpen, setIsOpen] = useState(false);
-  const [theme, setTheme] = useState<Theme | null>(null)
   const [developmentDomain, setDevelopmentDomain] = useState(false);
-  const [progressBar, setProgressBar] = useState<string | null>(null);
-  const updateElementPosition = useCallback(() => {
+  const [stepStartTime, setStepStartTime] = useState<number>(0);
+  const [penguinData, setPenguinData] = useState<{
+    penguinId: string;
+    flowType: string;
+  }>({
+    penguinId: "",
+    flowType: ""
+  });
+
+  const updateElementPosition = useCallback(async () => {
     if (currentStep >= 0 && currentStep < steps.length) {
       if (steps[currentStep]?.selectorId) {
+        const element = document.getElementById(steps[currentStep]?.selectorId ?? "");
         const position = getElementPosition(steps[currentStep]?.selectorId ?? "");
         if (position) {
           setElementPosition(position);
@@ -446,36 +519,136 @@ export function DemoPenguinProvider({
     }
   }, [currentStep, steps]);
 
-
   useEffect(() => {
     updateElementPosition();
     window.addEventListener("resize", updateElementPosition);
-    window.addEventListener("scroll", updateElementPosition);
 
     return () => {
       window.removeEventListener("resize", updateElementPosition);
-      window.removeEventListener("scroll", updateElementPosition);
     };
   }, [updateElementPosition]);
 
+  useEffect(() => {
+    if (currentStep >= 0 && steps[currentStep]?.selectorId) {
+      const element = document.getElementById(steps[currentStep].selectorId);
+      scrollIntoViewIfNeeded(element);
+    }
+  }, [currentStep, steps]);
 
-  const nextStep = useCallback(async () => {
-    setCurrentStep((prev) => {
-      if (prev >= steps.length - 1) {
-        return -1;
+  useEffect(() => {
+    if (currentStep >= 0) {
+      setStepStartTime(Date.now());
+    }
+  }, [currentStep]);
+
+  const nextStep = useCallback(async (buttonType: string, navigationType: string = "internal", url: string = "") => {
+    const timeSpent = Date.now() - stepStartTime;
+    
+    if (buttonType === "next") {
+      const nextStepIndex = currentStep + 1;
+      
+      if (nextStepIndex >= steps.length) {
+        // This is where the tour completes - send completion event
+        const completionEvent: StepEvent = {
+          env: devMode ? "development" : "production",
+          stepId: steps[currentStep].id,
+          clientToken: clientToken,
+          penguinId: penguinData.penguinId || "",
+          flowType: penguinData.flowType || "",
+          eventType: "completion", // New event type for completion
+          timestamp: Date.now(),
+          userId: userInfo?.userId,
+          timeSpent: timeSpent
+        };
+        
+        // Send completion event
+        fetch(devMode ? DEMO_PENGUIN_API_URL_EVENTS_DEV : DEMO_PENGUIN_API_URL_EVENTS, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(completionEvent),
+        }).catch(error => {
+          console.error('Error sending completion event data:', error);
+        });
+        
+        setCurrentStep(-1);
+        setIsTourCompleted(true);
+        onComplete?.();
+        return;
       }
-      return prev + 1;
-    });
 
-    if (currentStep === steps.length - 1) {
+      // Pre-scroll to next element before changing step
+      if (steps[nextStepIndex]?.selectorId) {
+        const nextElement = document.getElementById(steps[nextStepIndex].selectorId);
+        await scrollIntoViewIfNeeded(nextElement);
+      }
+
+      setCurrentStep(nextStepIndex);
+      setStepStartTime(Date.now());
+    }
+
+    if (buttonType === "back") {
+      if (currentStep > 0) {  
+        const prevStepIndex = currentStep - 1;
+        if (steps[prevStepIndex]?.selectorId) {
+          const prevElement = document.getElementById(steps[prevStepIndex].selectorId);
+          await scrollIntoViewIfNeeded(prevElement);
+        }
+        setCurrentStep(prevStepIndex);
+      }
+    }
+
+    if (buttonType === "skip") {
+      setCurrentStep(-1);
       setIsTourCompleted(true);
       onComplete?.();
     }
-  }, [steps.length, onComplete, currentStep]);
+    if (buttonType === "navigate") {
+      if (navigationType === "internal") {
+        window.location.href = url;
+      } else {
+        window.open("https://" + url, '_blank');
+      }
+    }
 
-  const previousStep = useCallback(() => {
-    setCurrentStep((prev) => (prev > 0 ? prev - 1 : prev));
-  }, []);
+    const event: StepEvent = {
+      env: devMode ? "development" : "production",
+      stepId: steps[currentStep].id,
+      clientToken: clientToken,
+      penguinId: penguinData.penguinId || "",
+      flowType: penguinData.flowType || "",
+      eventType: buttonType as "next" | "previous" | "skip" | "back" | "submit" | "navigate" | "playedVideo" | "completion",
+      timestamp: Date.now(),
+      userId: userInfo?.userId,
+      timeSpent: timeSpent
+    }
+
+    // Fire and forget API call - won't block UI
+    fetch(devMode ? DEMO_PENGUIN_API_URL_EVENTS_DEV : DEMO_PENGUIN_API_URL_EVENTS, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(event),
+    }).catch(error => {
+      // Silently handle errors to prevent UI disruption
+      console.error('Error sending event data:', error);
+    });
+  }, [currentStep, onComplete, devMode, userInfo, stepStartTime, steps, clientToken]);
+
+  const previousStep = useCallback(async () => {
+    if (currentStep > 0) {
+      const prevStepIndex = currentStep - 1;
+      
+      if (steps[prevStepIndex]?.selectorId) {
+        const prevElement = document.getElementById(steps[prevStepIndex].selectorId);
+        await scrollIntoViewIfNeeded(prevElement);
+      }
+
+      setCurrentStep(prevStepIndex);
+    }
+  }, [currentStep, steps]);
 
   const endTour = useCallback(() => {
     setCurrentStep(-1);
@@ -491,18 +664,18 @@ export function DemoPenguinProvider({
 
   const handleClick = useCallback(
     (e: MouseEvent) => {
-      if (currentStep >= 0 && elementPosition && steps[currentStep]?.onClickWithinArea) {
+      if (currentStep >= 0 && elementPosition){ //&& steps[currentStep]?.onClickWithinArea) {
         const clickX = e.clientX + window.scrollX;
         const clickY = e.clientY + window.scrollY;
 
         const isWithinBounds =
           clickX >= elementPosition.left &&
-          clickX <= elementPosition.left + (steps[currentStep]?.width || elementPosition.width) &&
+          clickX <= elementPosition.left + (elementPosition.width) &&
           clickY >= elementPosition.top &&
-          clickY <= elementPosition.top + (steps[currentStep]?.height || elementPosition.height);
+          clickY <= elementPosition.top + (elementPosition.height);
 
         if (isWithinBounds) {
-          steps[currentStep].onClickWithinArea?.();
+          //steps[currentStep].onClickWithinArea?.();
         }
       }
     },
@@ -520,17 +693,16 @@ export function DemoPenguinProvider({
     setIsCompleted(completed);
   }, []);
 
+
   const fetchDemoPenguinData = (pathname: string) => {
+    if (typeof window === 'undefined') return;
     fetch(devMode ? DEMO_PENGUIN_API_URL_DEV : DEMO_PENGUIN_API_URL, {
       method: 'GET',
       headers: new Headers({
         'demopenguin-client-token': clientToken,
         'demopenguin-pathname': pathname,
-        'demopenguin-user-id': userId || '',
-        'demopenguin-user-email': userEmail || '',
-        'demopenguin-first-name': firstName || '',
-        'demopenguin-last-name': lastName || '',
-        'demopenguin-additional-info': JSON.stringify(additionalInfo || {})
+        'demopenguin-user-info': userInfo ? JSON.stringify(userInfo) : '',
+        'demopenguin-variables': JSON.stringify(variables || {}),
       })
     })
       .then(response => response.json())
@@ -552,9 +724,11 @@ export function DemoPenguinProvider({
         }
         else {
           setDevelopmentDomain(data.developmentDomain);
+          setPenguinData({
+            penguinId: data.id,
+            flowType: data.flowType,
+          });
           setSteps(data.steps);
-          setTheme(data.theme)
-          setProgressBar(data.progressBar)
           console.log("DemoPenguin is active");
           setIsOpen(true);
         }
@@ -563,6 +737,8 @@ export function DemoPenguinProvider({
   };
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const currentUrl = window.location.pathname;
     fetchDemoPenguinData(currentUrl);
   }, [clientToken, devMode]);
@@ -581,235 +757,144 @@ export function DemoPenguinProvider({
     }
   });
 
-  const renderStepContent = (highlightStep: boolean, step: Step, progressBar: string | null, theme: Theme, previousStep: () => void, nextStep: () => void, currentStep: number) => {
+  const renderRowItems = (row: StepRow, rowIndex: number) => {
 
-    const sizesToClass = {
-      "small": 'w-[300px]',
-      "medium": 'w-[400px]',
-      "large": 'w-[500px]'
-    }
-    const cardClass = `
-        ${theme.backgroundColor} 
-        ${theme.shadowColor}
-        ${theme.shadowOpacity}
-        ${theme.shadowRadius}
-        ${theme.shadowOffsetX}
-        ${theme.shadowOffsetY}
-        ${theme.cardRadius}
-        ${theme.cardBorderColor}
-        ${theme.cardBorderWidth}
-        ${theme.cardBorderStyle}
-        ${theme.cardPaddingX}
-        ${theme.cardPaddingY}
-        ${sizesToClass[step.size]}
-        shadow-lg`
-
-    const titleTextClass = `${theme.titleTextColor}
-        ${theme.titleTextSize}
-        ${theme.titleTextWeight}
-        ${theme.titleTextAlign}
-        ${theme.titleTextPaddingX}
-        ${theme.titleTextPaddingY}`
-
-    const descriptionTextClass = `${theme.descriptionTextColor}
-        ${theme.descriptionTextSize}
-        ${theme.descriptionTextWeight}
-        ${theme.descriptionTextAlign}
-        ${theme.descriptionTextPaddingX}
-        ${theme.descriptionTextPaddingY}`
-
-    const buttonClass = `
-    ${theme.buttonSize}
-    ${theme.buttonTextColor}
-    ${theme.buttonTextSize}
-    ${theme.buttonBackgroundColor}
-    ${theme.buttonBorderColor}
-    ${theme.buttonBorderRadius}
-    ${theme.buttonBorderWidth}
-    ${theme.buttonBorderStyle}
-    ${theme.buttonTextWeight}
-    ${theme.buttonHoverTextColor}
-    ${theme.buttonHoverBackgroundColor}`
-
-    const skipButtonClass = `
-    ${theme.buttonBorderRadius}
-    ${theme.buttonBorderWidth}
-    ${theme.buttonBorderStyle}
-    ${theme.buttonSize}
-    ${theme.buttonTextWeight}
-    ${theme.skipButtonTextColor} 
-    ${theme.skipButtonBackgroundColor} 
-    ${theme.skipButtonHoverTextColor} 
-    ${theme.skipButtonHoverBackgroundColor}`
-
-    const buttonText = currentStep === steps.length - 1 ? "Done" : step.nextButtonText
-    if (highlightStep) {
-      return (
-        <div className={cardClass}>
-          {
-            step.skipButton && (
-              <X className="h-5 w-5 absolute top-2 right-2 text-muted-foreground hover:text-primary cursor-pointer" />
-            )
-          }
-          {
-            step.imageUrl && (
-              <img
-                src={step.imageUrl}
-                className="rounded-lg w-full h-full object-cover" />
-            )
-          }
-          {step.videoUrl ? (
-            <VideoPlayer
-              key={step.videoUrl}
-              src={step.videoUrl}
-              thumbnailSrc={step.thumbnailUrl}
-            />
-          ) : null
-          }
-          <motion.div
-            key={`tour-content-${step.id}`}
-            initial={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
-            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
-            className="overflow-hidden mt-2"
-            transition={{
-              duration: 0.2,
-              height: {
-                duration: 0.4,
-              },
-            }}
-          >
-            <h2 className={titleTextClass}>{step.title}</h2>
-            <p className={descriptionTextClass}>{step.description}</p>
-          </motion.div>
-          <div className={`w-full flex flex-row gap-2 ${progressBar ? 'justify-between' : 'justify-end'} items-center mt-2`}>
-            {
-              progressBar && (
-                //use progressBarItems to find and render only the selected progress bar
-                progressBarItems
-                  .filter(item => item.value === progressBar)
-                  .map((item) => (
-                    <item.component
-                      key={item.value}
-                      currentStepIndex={currentStep}
-                      totalSteps={steps.length}
-                    />
-                  ))
-              )
-            }
-            <div className="flex justify-end gap-2">
-
-              {step.backButton && (
-                <Button
-                  onClick={previousStep}
-                  disabled={currentStep === 0}
-                  className={skipButtonClass}
-                >
-                  Back
-                </Button>
-              )}
-              <Button
-                onClick={nextStep}
-                className={buttonClass}
+    return row.rowItems.map((item: any, itemIndex: number) => (
+      <div
+        className={`slot flex flex-col justify-center`}
+        key={`step-row-slot-${rowIndex}-${itemIndex}`}
+      >
+        {
+          item.stepType === "text" && (
+            <>
+              <h2
+                onClick={() => {
+                  if (item.link) {
+                    window.open("https://" + item.link, '_blank')
+                  }
+                }}
+                style={{
+                  color: item.textColor
+                }}
+                className={`
+                        ${item.paddingTop}
+                        ${item.paddingBottom}
+                        ${item.paddingLeft}
+                        ${item.paddingRight}
+                        ${item.textWeight}
+                        ${item.textSize}
+                        ${item.textSpacing}
+                        ${item.textAlign}
+                        item
+                `}
               >
-                {buttonText}
-              </Button>
-            </div>
-          </div>
-          {developmentDomain && (
-            <div className="text-muted-foreground bg-orange-500 text-white text-xs absolute -bottom-8 right-2 rounded-b-md p-2">
-              Development Domain
-            </div>
-          )}
-        </div>
-      )
-    }
-
-    else {
-      return (
-        <AlertDialogContent className={cardClass}>
-          <>
-            {
-              step.skipButton && (
-                <X className="h-5 w-5 absolute top-2 right-2 text-muted-foreground hover:text-primary cursor-pointer" />
-              )
-            }
-            {
-              step.imageUrl && (
-                <img
-                  src={step.imageUrl}
-                  className="rounded-lg w-full h-full object-cover" />
-              )
-            }
-            {step.videoUrl ? (
-              <VideoPlayer
-                key={step.videoUrl}
-                src={step.videoUrl}
-                thumbnailSrc={step.thumbnailUrl}
-              />
-            ) : null
-            }
-            <motion.div
-              key={`tour-content-${step.id}`}
-              initial={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
-              className="overflow-hidden mt-2"
-              transition={{
-                duration: 0.2,
-                height: {
-                  duration: 0.4,
-                },
-              }}
+                {interpolateVariables(item.text, variables)}
+              </h2>
+            </>
+          )
+        }
+        {
+          item.stepType === "image" && (
+            <div
+              className={`
+                                        ${item.px}
+                                        ${item.py}
+                                        
+                                        ${item.imageRadius}
+                                        item
+                                    `}
             >
-              <h2 className={titleTextClass}>{step.title}</h2>
-              <p className={descriptionTextClass}>{step.description}</p>
-            </motion.div>
-
-            <div className={`w-full flex flex-row gap-2 ${progressBar ? 'justify-between' : 'justify-end'} items-center mt-2`}>
               {
-                progressBar && (
-                  //use progressBarItems to find and render only the selected progress bar
-                  progressBarItems
-                    .filter(item => item.value === progressBar)
-                    .map((item) => (
-                      <item.component
-                        key={item.value}
-                        currentStepIndex={currentStep}
-                        totalSteps={steps.length}
-                      />
-                    ))
-                )
-              }
-              <div className="flex justify-end gap-2">
+                item.imageUrl ? (
+                  <img
+                    style={{
+                      borderColor: item.imageBorderColor,
 
-                {step.backButton && (
-                  <Button
-                    onClick={previousStep}
-                    disabled={currentStep === 0}
-                    className={skipButtonClass}
-                  >
-                    Back
-                  </Button>
-                )}
-                <Button
-                  onClick={nextStep}
-                  className={buttonClass}
-                >
-                  {buttonText}
-                </Button>
-              </div>
+                    }}
+                    src={item.imageUrl}
+                    className={`
+                                        ${item.imageBackgroundColor}
+                                        ${item.imageRadius}
+                                        ${item.objectFit}
+                                        ${item.imageBorderWidth}
+
+                                `}
+                  ></img>
+                )
+                  :
+                  <div
+                    style={{
+                      borderColor: item.imageBorderColor,
+
+                    }}
+                    className={`relative w-full h-full aspect-video
+                                    ${item.imageBorderWidth}
+                                    ${item.imageBackgroundColor}
+                                    ${item.imageRadius}
+                                    ${item.objectFit}
+                                    `}>
+                    <VideoPlayer src={item.videoUrl} thumbnailSrc={item.thumbnailUrl} rounded={item.imageRadius} />
+                  </div>
+              }
             </div>
-            {developmentDomain && (
-              <div className="text-muted-foreground bg-orange-500 text-white text-xs absolute -bottom-8 right-2 rounded-b-md p-2">
-                Development Domain active
-              </div>
-            )}
-          </>
-        </AlertDialogContent >
-      )
-    }
-  }
+          )
+        }
+        {
+          item.stepType === "button" && (
+            <div
+              onClick={() => nextStep(item.buttonType, item.navigation.type, item.navigation.url)}
+              className={`
+                        h-full w-full
+                        ${item.buttonAlign}
+                    `}>
+              
+              <button
+                style={{
+                  color: item.buttonTextColor,
+                  backgroundColor: item.buttonBackgroundColor,
+                  borderColor: item.buttonBorderColor,
+
+
+                }}
+                className={`
+                        ${item.px}
+                        ${item.py}
+                        ${item.onHover}
+                        ${item.buttonHoverTextColor}
+                        ${item.buttonHoverBackgroundColor}
+                        ${item.buttonTextSize}
+                        ${item.buttonRadius}
+                        ${item.buttonBorderWidth}
+                        ${item.buttonBorderStyle}
+                        ${item.buttonTextWeight}
+                        ${item.buttonAlign}
+                        `}
+              >
+                {item.text}
+              </button>
+            </div>
+          )
+        }
+
+        {
+          item.stepType === "progressBar" && (
+            <div
+              className={`
+                        ${item.px}
+                        ${item.py}
+                        h-full w-full min-h-5 item
+                        flex flex-row
+                        ${item.verticalAlign}
+                        ${item.horizontalAlign}
+                        `}
+            >
+              {progressBarItems.find(bar => bar.value === item.progressBarType)?.component({ currentStepIndex: currentStep, totalSteps: steps.length })}
+            </div>
+          )
+        }
+      </div >
+    ));
+  };
 
   return (
     <DemoPenguinContext.Provider
@@ -823,7 +908,6 @@ export function DemoPenguinProvider({
         startTour,
         setSteps,
         steps,
-        theme: theme || defaultTheme,
         isTourCompleted: isCompleted,
         setIsTourCompleted,
         isOpen,
@@ -839,26 +923,9 @@ export function DemoPenguinProvider({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className={`absolute inset-0 z-50 overflow-hidden ${steps[currentStep]?.backdrop ? 'bg-black/50' : ''}`}
-                style={{
-                  ...(elementPosition && {
-                    clipPath: `polygon(
-                          0% 0%,                                                                          /* top-left */
-                          0% 100%,                                                                        /* bottom-left */
-                          100% 100%,                                                                      /* bottom-right */
-                          100% 0%,                                                                        /* top-right */
-                          
-                          /* Create rectangular hole */
-                          ${elementPosition.left}px 0%,                                                   /* top edge start */
-                          ${elementPosition.left}px ${elementPosition.top}px,                             /* hole top-left */
-                          ${elementPosition.left + (steps[currentStep]?.width || elementPosition.width)}px ${elementPosition.top}px,  /* hole top-right */
-                          ${elementPosition.left + (steps[currentStep]?.width || elementPosition.width)}px ${elementPosition.top + (steps[currentStep]?.height || elementPosition.height)}px,  /* hole bottom-right */
-                          ${elementPosition.left}px ${elementPosition.top + (steps[currentStep]?.height || elementPosition.height)}px,  /* hole bottom-left */
-                          ${elementPosition.left}px 0%                                                    /* back to top edge */
-                        )`
-                  })
-                }}
+                className={`fixed inset-0 z-50 overflow-hidden`}
               />
+              
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -867,11 +934,18 @@ export function DemoPenguinProvider({
                   position: "absolute",
                   top: elementPosition?.top,
                   left: elementPosition?.left,
-                  width: steps[currentStep]?.width || elementPosition?.width,
-                  height: steps[currentStep]?.height || elementPosition?.height,
+                  width: elementPosition?.width,
+                  height: elementPosition?.height,
+                  pointerEvents: 'none',
+                  backgroundColor: 'transparent',
+                  boxShadow: steps[currentStep]?.backdrop ? '0 0 0 9999px rgba(0, 0, 0, 0.5)' : 'none'
                 }}
-                className={cn("z-[100] border-2 border-muted-foreground", className)}
+                className={cn(
+                  "z-[100] rounded-sm border-2 border-primary",
+                  className
+                )}
               />
+              
 
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -892,13 +966,58 @@ export function DemoPenguinProvider({
                 }}
                 exit={{ opacity: 0, y: 10 }}
                 style={{
-                  position: "absolute",
+                  position: "fixed",
                   transform: elementPosition ? 'none' : 'none'
                 }}
                 className="bg-transparent relative z-[100] w-fit p-0"
               >
                 <AnimatePresence mode="wait">
-                  {renderStepContent(true, steps[currentStep], progressBar, theme || defaultTheme, previousStep, nextStep, currentStep)}
+                  <div
+                    style={{
+                      width: steps[currentStep]?.width,
+                      height: steps[currentStep]?.height,
+                      background: steps[currentStep]?.cardBackgroundColor,
+                      borderColor: steps[currentStep]?.cardBorderColor
+                    }}
+                    className={`
+                ${steps[currentStep]?.px}
+                ${steps[currentStep]?.py}
+                ${steps[currentStep]?.cardShadowSize}
+                ${steps[currentStep]?.cardBorderWidth}
+                ${steps[currentStep]?.cardBorderStyle}
+                ${steps[currentStep]?.cardRadius}
+                
+                ${steps[currentStep]?.onHover}
+                flex flex-col gap-1
+                justify-between
+                transition-all duration-300
+                
+            `}>
+                    {
+                      steps[currentStep]?.rows.map((row, rowIndex) => (
+                        <div
+                          key={`step-row-${rowIndex}`}
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: `repeat(${row.rowItems.length}, minmax(0, 1fr))`
+                          }}
+                          className={`
+                    w-full 
+                    ${row.rowGap}
+                    ${row.paddingTop}
+                    ${row.paddingBottom}
+                    ${row.paddingLeft}
+                    ${row.paddingRight}
+                    group 
+                    relative 
+                  `}
+                        >
+                          {renderRowItems(row, rowIndex)}
+                        </div>
+                      ))
+                    }
+                  </div>
+
                 </AnimatePresence>
               </motion.div>
             </>
