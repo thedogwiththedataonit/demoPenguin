@@ -809,7 +809,7 @@ export function DemoPenguinProvider({
                   <img
                     style={{
                       borderColor: item.imageBorderColor,
-                      
+                      width: "100%",
                     }}
                     src={item.imageUrl}
                     className={`
@@ -817,7 +817,6 @@ export function DemoPenguinProvider({
                                         ${item.imageRadius}
                                         ${item.objectFit}
                                         ${item.imageBorderWidth}
-                                        w-full
                                 `}
                   ></img>
                 )
