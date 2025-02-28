@@ -177,7 +177,7 @@ export type StepEvent = {
   penguinId: string;
   flowType: string;
   clientToken: string;
-  eventType: "next" | "previous" | "skip" | "back" | "submit" | "navigate" | "playedVideo"
+  eventType: "next" | "previous" | "skip" | "back" | "submit" | "navigate" | "playedVideo" | "completion"
   timestamp: number //in milliseconds since epoch
   userId?: string;
   timeSpent: number;
@@ -548,6 +548,30 @@ export function DemoPenguinProvider({
       const nextStepIndex = currentStep + 1;
       
       if (nextStepIndex >= steps.length) {
+        // This is where the tour completes - send completion event
+        const completionEvent: StepEvent = {
+          env: devMode ? "development" : "production",
+          stepId: steps[currentStep].id,
+          clientToken: clientToken,
+          penguinId: penguinData.penguinId || "",
+          flowType: penguinData.flowType || "",
+          eventType: "completion", // New event type for completion
+          timestamp: Date.now(),
+          userId: userInfo?.userId,
+          timeSpent: timeSpent
+        };
+        
+        // Send completion event
+        fetch(devMode ? DEMO_PENGUIN_API_URL_EVENTS_DEV : DEMO_PENGUIN_API_URL_EVENTS, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(completionEvent),
+        }).catch(error => {
+          console.error('Error sending completion event data:', error);
+        });
+        
         setCurrentStep(-1);
         setIsTourCompleted(true);
         onComplete?.();
@@ -595,7 +619,7 @@ export function DemoPenguinProvider({
       clientToken: clientToken,
       penguinId: penguinData.penguinId || "",
       flowType: penguinData.flowType || "",
-      eventType: buttonType as "next" | "previous" | "skip" | "back" | "submit" | "navigate" | "playedVideo",
+      eventType: buttonType as "next" | "previous" | "skip" | "back" | "submit" | "navigate" | "playedVideo" | "completion",
       timestamp: Date.now(),
       userId: userInfo?.userId,
       timeSpent: timeSpent
