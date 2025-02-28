@@ -118,8 +118,6 @@ export type StepText = {
 
 }
 
-
-
 export type StepButton = {
   stepType: "button"
   buttonType: "next" | "previous" | "skip" | "back" | "submit" | "navigate"
@@ -173,6 +171,18 @@ export type StepInput = {
   inputRequired: boolean
 }
 
+export type StepEvent = {
+  env: "development" | "production"
+  stepId: string;
+  penguinId: string;
+  flowType: string;
+  clientToken: string;
+  eventType: "next" | "previous" | "skip" | "back" | "submit" | "navigate" | "playedVideo"
+  timestamp: number //in milliseconds since epoch
+  userId?: string;
+  timeSpent: number;
+}
+
 
 interface DemoPenguinContextType {
   currentStep: number;
@@ -196,7 +206,13 @@ interface DemoPenguinProviderProps {
   className?: string;
   isTourCompleted?: boolean;
   clientToken: string;
-  userId?: string;
+  userInfo: {
+    userId?: string;
+    userFirstName?: string;
+    userLastName?: string;
+    userEmail?: string;
+    userType?: string;
+  };
   variables?: {
     [key: string]: string;
   };
@@ -209,10 +225,15 @@ interface PathChangeConfig {
 }
 
 function usePathMonitor({ onPathChange, shouldTrigger }: PathChangeConfig = {}) {
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [currentPath, setCurrentPath] = useState('');
+
+  // Initialize the path once the component mounts (client-side only)
+  useEffect(() => {
+    setCurrentPath(window.location.pathname);
+  }, []);
 
   const handlePathChange = useCallback((newPath: string) => {
-    if (newPath !== currentPath) {
+    if (newPath !== currentPath && currentPath !== '') {
       if (!shouldTrigger || shouldTrigger(newPath, currentPath)) {
         onPathChange?.(newPath, currentPath);
         setCurrentPath(newPath);
@@ -221,6 +242,9 @@ function usePathMonitor({ onPathChange, shouldTrigger }: PathChangeConfig = {}) 
   }, [currentPath, onPathChange, shouldTrigger]);
 
   useEffect(() => {
+    // Only run this effect on the client
+    if (typeof window === 'undefined') return;
+    
     // Check for initial path change
     handlePathChange(window.location.pathname);
 
@@ -236,10 +260,13 @@ function usePathMonitor({ onPathChange, shouldTrigger }: PathChangeConfig = {}) 
     });
 
     // Observe changes to the URL
-    observer.observe(document.querySelector('body')!, {
-      subtree: true,
-      childList: true
-    });
+    const bodyElement = document.querySelector('body');
+    if (bodyElement) {
+      observer.observe(bodyElement, {
+        subtree: true,
+        childList: true
+      });
+    }
 
     return () => {
       window.removeEventListener('popstate', checkPath);
@@ -403,9 +430,12 @@ function calculateStaticPosition(step: Step) {
 const DEMO_PENGUIN_API_URL = "https://www.demopenguin.com/api/v1/get/penguin";
 const DEMO_PENGUIN_API_URL_DEV = "http://localhost:3000/api/v1/get/penguin";
 
-function scrollIntoViewIfNeeded(element: HTMLElement | null) {
-  if (!element) return;
+const DEMO_PENGUIN_API_URL_EVENTS = "https://www.demopenguin.com/api/v1/events";
+const DEMO_PENGUIN_API_URL_EVENTS_DEV = "http://localhost:3000/api/v1/events";
 
+function scrollIntoViewIfNeeded(element: HTMLElement | null) {
+  if (!element || typeof window === 'undefined') return Promise.resolve();
+  
   // Get element's position relative to viewport
   const rect = element.getBoundingClientRect();
   
@@ -451,7 +481,7 @@ export function DemoPenguinProvider({
   className,
   isTourCompleted = false,
   clientToken,
-  userId,
+  userInfo,
   variables,
   devMode,
 }: DemoPenguinProviderProps) {
@@ -466,6 +496,15 @@ export function DemoPenguinProvider({
   const [isCompleted, setIsCompleted] = useState(isTourCompleted);
   const [isOpen, setIsOpen] = useState(false);
   const [developmentDomain, setDevelopmentDomain] = useState(false);
+  const [stepStartTime, setStepStartTime] = useState<number>(0);
+  const [penguinData, setPenguinData] = useState<{
+    penguinId: string;
+    flowType: string;
+  }>({
+    penguinId: "",
+    flowType: ""
+  });
+
   const updateElementPosition = useCallback(async () => {
     if (currentStep >= 0 && currentStep < steps.length) {
       if (steps[currentStep]?.selectorId) {
@@ -496,7 +535,15 @@ export function DemoPenguinProvider({
     }
   }, [currentStep, steps]);
 
+  useEffect(() => {
+    if (currentStep >= 0) {
+      setStepStartTime(Date.now());
+    }
+  }, [currentStep]);
+
   const nextStep = useCallback(async (buttonType: string, navigationType: string = "internal", url: string = "") => {
+    const timeSpent = Date.now() - stepStartTime;
+    
     if (buttonType === "next") {
       const nextStepIndex = currentStep + 1;
       
@@ -514,6 +561,7 @@ export function DemoPenguinProvider({
       }
 
       setCurrentStep(nextStepIndex);
+      setStepStartTime(Date.now());
     }
 
     if (buttonType === "back") {
@@ -533,14 +581,38 @@ export function DemoPenguinProvider({
       onComplete?.();
     }
     if (buttonType === "navigate") {
-
       if (navigationType === "internal") {
         window.location.href = url;
       } else {
         window.open("https://" + url, '_blank');
       }
     }
-  }, [steps, currentStep, onComplete]);
+
+    console.log(timeSpent);
+    const event: StepEvent = {
+      env: devMode ? "development" : "production",
+      stepId: steps[currentStep].id,
+      clientToken: clientToken,
+      penguinId: penguinData.penguinId || "",
+      flowType: penguinData.flowType || "",
+      eventType: buttonType as "next" | "previous" | "skip" | "back" | "submit" | "navigate" | "playedVideo",
+      timestamp: Date.now(),
+      userId: userInfo?.userId,
+      timeSpent: timeSpent
+    }
+
+    // Fire and forget API call - won't block UI
+    fetch(devMode ? DEMO_PENGUIN_API_URL_EVENTS_DEV : DEMO_PENGUIN_API_URL_EVENTS, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(event),
+    }).catch(error => {
+      // Silently handle errors to prevent UI disruption
+      console.error('Error sending event data:', error);
+    });
+  }, [currentStep, onComplete, devMode, userInfo, stepStartTime, steps, clientToken]);
 
   const previousStep = useCallback(async () => {
     if (currentStep > 0) {
@@ -599,12 +671,14 @@ export function DemoPenguinProvider({
   }, []);
 
   const fetchDemoPenguinData = (pathname: string) => {
+    if (typeof window === 'undefined') return;
+    
     fetch(devMode ? DEMO_PENGUIN_API_URL_DEV : DEMO_PENGUIN_API_URL, {
       method: 'GET',
       headers: new Headers({
         'demopenguin-client-token': clientToken,
         'demopenguin-pathname': pathname,
-        'demopenguin-user-id': userId || '',
+        'demopenguin-user-info': userInfo ? JSON.stringify(userInfo) : '',
         'demopenguin-variables': JSON.stringify(variables || {})
       })
     })
@@ -627,6 +701,10 @@ export function DemoPenguinProvider({
         }
         else {
           setDevelopmentDomain(data.developmentDomain);
+          setPenguinData({
+            penguinId: data.id,
+            flowType: data.flowType,
+          });
           setSteps(data.steps);
           console.log("DemoPenguin is active");
           setIsOpen(true);
@@ -636,6 +714,8 @@ export function DemoPenguinProvider({
   };
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const currentUrl = window.location.pathname;
     fetchDemoPenguinData(currentUrl);
   }, [clientToken, devMode]);
@@ -696,8 +776,7 @@ export function DemoPenguinProvider({
               className={`
                                         ${item.px}
                                         ${item.py}
-                                        ${item.height}
-                                        ${item.width}
+                                        
                                         ${item.imageRadius}
                                         item
                                     `}

@@ -6,7 +6,13 @@ import React from "react"
 interface DemoPenguinProps {
   children: React.ReactNode;
   clientToken: string;
-  userId?: string;
+  userInfo: {
+    userId?: string;
+    userFirstName?: string;
+    userLastName?: string;
+    userEmail?: string;
+    userType?: string;
+  };
   variables?: {
     [key: string]: string;
   };
@@ -66,11 +72,11 @@ const steps: DemoPenguinStep[] = [
 ];
 */
 
-export function DemoPenguin({ children, clientToken, userId, variables, devMode = false }: DemoPenguinProps) {
+export function DemoPenguin({ children, clientToken, userInfo, variables, devMode = false }: DemoPenguinProps) {
   return (
     <DemoPenguinProvider  
       clientToken={clientToken} 
-      userId={userId} 
+      userInfo={userInfo}
       variables={variables} 
       devMode={devMode || false}>      
       {children}
