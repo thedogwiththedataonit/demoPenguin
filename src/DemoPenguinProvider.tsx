@@ -802,6 +802,7 @@ export function DemoPenguinProvider({
                                         
                                         ${item.imageRadius}
                                         item
+                                        w-full
                                     `}
             >
               {
