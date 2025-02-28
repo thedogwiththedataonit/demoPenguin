@@ -27,14 +27,18 @@ export default function RootLayout({
       <body className={`${inter.className}`}>
         <DemoPenguin
           clientToken="client-token"
-          userId="user-id"
-          userEmail="user-email"
-          firstName="user-first-name"
-          lastName="user-last-name"
-          additionalInfo={{
+          userInfo={{
+            userId: "user-id",
+            userFirstName: "John",
+            userLastName: "Doe",
+            userEmail: "john.doe@example.com",
+            userType: "admin"
+          }}
+          variables={{
             company: "user-company",
             role: "user-role"
           }}
+          devMode={true}
         >
           {children}
         </DemoPenguin>
