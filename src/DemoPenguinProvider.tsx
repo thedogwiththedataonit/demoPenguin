@@ -180,6 +180,10 @@ export type StepEvent = {
   eventType: "next" | "previous" | "skip" | "back" | "submit" | "navigate" | "playedVideo" | "completion"
   timestamp: number //in milliseconds since epoch
   userId?: string;
+  userFirstName?: string;
+  userLastName?: string;
+  userEmail?: string;
+  userType?: string;
   timeSpent: number;
 }
 
@@ -621,6 +625,10 @@ export function DemoPenguinProvider({
       eventType: buttonType as "next" | "previous" | "skip" | "back" | "submit" | "navigate" | "playedVideo" | "completion",
       timestamp: Date.now(),
       userId: userInfo?.userId,
+      userFirstName: userInfo?.userFirstName,
+      userLastName: userInfo?.userLastName,
+      userEmail: userInfo?.userEmail,
+      userType: userInfo?.userType,
       timeSpent: timeSpent
     }
 
@@ -824,6 +832,7 @@ export function DemoPenguinProvider({
                   <div
                     style={{
                       borderColor: item.imageBorderColor,
+                      width: "100%",
 
                     }}
                     className={`relative w-full h-full aspect-video
