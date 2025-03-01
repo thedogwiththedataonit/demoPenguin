@@ -1,7 +1,7 @@
 import React from "react";
 const ProgressBar = ({ currentStepIndex, totalSteps }: { currentStepIndex: number, totalSteps: number }) => {
     const progress = ((currentStepIndex + 1) / totalSteps) * 100;
-    return <div className="w-2/3 bg-gray-200 rounded-full h-2">
+    return <div className="w-full bg-gray-200 rounded-full h-2">
         <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${progress}%` }}></div>
     </div>
 }
@@ -29,7 +29,7 @@ const ProgressDots = ({ currentStepIndex, totalSteps }: { currentStepIndex: numb
 const stripedProgressBar = ({ currentStepIndex, totalSteps }: { currentStepIndex: number, totalSteps: number }) => {
     const progress = ((currentStepIndex + 1) / totalSteps) * 100;
     return (
-        <div className="w-2/3 bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 rounded-full h-2">
             <div
                 className="bg-blue-600 h-2 rounded-full"
                 style={{
@@ -46,7 +46,7 @@ const stripedProgressBar = ({ currentStepIndex, totalSteps }: { currentStepIndex
 const gradientProgressBar = ({ currentStepIndex, totalSteps }: { currentStepIndex: number, totalSteps: number }) => {
     const progress = ((currentStepIndex + 1) / totalSteps) * 100;
     return (
-        <div className="w-2/3 bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 rounded-full h-2">
             <div
                 className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full"
                 style={{ width: `${progress}%` }}
@@ -58,7 +58,7 @@ const gradientProgressBar = ({ currentStepIndex, totalSteps }: { currentStepInde
 const labelProgressBar = ({ currentStepIndex, totalSteps }: { currentStepIndex: number, totalSteps: number }) => {
     const progress = ((currentStepIndex + 1) / totalSteps) * 100;
     return (
-        <div className="w-2/3 flex flex-col gap-2">
+        <div className="w-full flex flex-col gap-2">
             <div className="flex justify-between items-center">
                 <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
                     {currentStepIndex + 1 === totalSteps ? 'Final Step' : 'In Progress'}
@@ -122,7 +122,7 @@ const circleProgressBar = ({ currentStepIndex, totalSteps }: { currentStepIndex:
 const animatedProgressBar = ({ currentStepIndex, totalSteps }: { currentStepIndex: number, totalSteps: number }) => {
     const progress = ((currentStepIndex + 1) / totalSteps) * 100;
     return (
-        <div className="w-2/3 bg-gray-200 rounded-full h-2 overflow-hidden">
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <div
                 className="bg-green-500 h-2 rounded-full animate-pulse"
                 style={{ width: `${progress}%` }}
