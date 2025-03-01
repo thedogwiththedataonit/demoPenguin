@@ -33,7 +33,7 @@ export default function VideoPlayer({
           <img
             src={thumbnailSrc || "/placeholder.svg"}
             alt="Video thumbnail"
-            className={`object-cover ${rounded}`}
+            className={`object-cover ${rounded} w-full`}
             
           />
           <button
